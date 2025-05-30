@@ -31,7 +31,7 @@ public class ScoreboardManager {
             lines = Arrays.asList(
                     "&7&m─────────────────",
                     "&7Online: &a{online}",
-                    "&7Rang: {prefix}",
+                    "&7Rang: {group}",
                     "",
                     "&7Coins: &6{coins}",
                     "&7Bank: &6{bank_coins}",
@@ -62,6 +62,7 @@ public class ScoreboardManager {
             String processed = line
                     .replace("{online}", String.valueOf(plugin.getServer().getOnlinePlayers().size()))
                     .replace("{prefix}", plugin.getPrefixManager().getPrefix(player))
+                    .replace("{group}", plugin.getPrefixManager().getGroupDisplayName(player))
                     .replace("{player}", player.getName())
                     .replace("{coins}", String.valueOf(data.getCoins()))
                     .replace("{bank_coins}", String.valueOf(data.getBankCoins()))

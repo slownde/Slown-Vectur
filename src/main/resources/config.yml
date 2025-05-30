@@ -14,15 +14,15 @@ messages:
 scoreboard:
   title: "&6&lSlown Network"
   lines:
-    - "&7&m─────────────────"
+    - "&7&m───────────"
     - "&7Online: &a{online}"
-    - "&7Rang: {prefix}"
+    - "&7Rang: {group}"
     - ""
     - "&7Coins: &6{coins}"
     - "&7Bank: &6{bank_coins}"
     - ""
     - "&7Spielzeit: &b{playtime}"
-    - "&7&m─────────────────"
+    - "&7&m───────────"
 
 # Tablist Configuration
 tablist:
