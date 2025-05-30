@@ -1,0 +1,77 @@
+﻿name: Slown-Vectur
+version: '1.0'
+main: de.syscall.SlownVectur
+api-version: '1.21'
+authors: [80x0]
+description: Das Herz des Slown Networks
+website: https://slown.de
+softdepend: [LuckPerms, PlaceholderAPI]
+depend: [LabyModServerAPI]
+
+permissions:
+  slownvectur.*:
+    description: Alle Permissions
+    default: op
+  slownvectur.chat.color:
+    description: Farbe im Chat nutzen
+    default: false
+  slownvectur.chat.animation:
+    description: Animationen im Chat nutzen
+    default: false
+  slownvectur.fly:
+    description: Fliegen für sich selbst
+    default: false
+  slownvectur.fly.others:
+    description: Fliegen für andere setzen
+    default: false
+  slownvectur.gamemode:
+    description: Gamemode ändern
+    default: false
+  slownvectur.time:
+    description: Zeit ändern
+    default: false
+  slownvectur.reload:
+    description: Plugin reloaden
+    default: op
+  slownvectur.performance:
+    description: Performance checken
+    default: op
+  slownvectur.coins.admin:
+    description: Coins verwalten
+    default: op
+
+commands:
+  fly:
+    description: Fliegen togglen
+    usage: /fly [spieler]
+  gm:
+    description: Gamemode ändern
+    usage: /gm <mode> [spieler]
+  gms:
+    description: Survival Gamemode
+    usage: /gms [spieler]
+  gmc:
+    description: Creative Gamemode
+    usage: /gmc [spieler]
+  gma:
+    description: Adventure Gamemode
+    usage: /gma [spieler]
+  gmsp:
+    description: Spectator Gamemode
+    usage: /gmsp [spieler]
+  day:
+    description: Tag setzen
+    usage: /day [welt]
+  night:
+    description: Nacht setzen
+    usage: /night [welt]
+  slownvectur:
+    description: Hauptcommand
+    usage: /slownvectur <reload|performance>
+    aliases: [sv]
+  coins:
+    description: Coins verwalten
+    usage: /coins <add|remove|set|balance> [spieler] [menge]
+  bank:
+    description: Bank verwalten
+    usage: /bank <deposit|withdraw|balance> <menge>

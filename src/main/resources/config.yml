@@ -1,0 +1,49 @@
+﻿# Slown-Vectur Configuration
+# Das Herz des Slown Networks
+
+# Chat System Configuration
+chat:
+  format: "{prefix} {player}&7: {message}"
+
+# Join/Leave Messages
+messages:
+  join: "&a{player} &7ist dem Server beigetreten"
+  leave: "&c{player} &7hat den Server verlassen"
+
+# Scoreboard Configuration
+scoreboard:
+  title: "&6&lSlown Network"
+  lines:
+    - "&7&m─────────────────"
+    - "&7Online: &a{online}"
+    - "&7Rang: {prefix}"
+    - ""
+    - "&7Coins: &6{coins}"
+    - "&7Bank: &6{bank_coins}"
+    - ""
+    - "&7Spielzeit: &b{playtime}"
+    - "&7&m─────────────────"
+
+# Tablist Configuration
+tablist:
+  header: "&6&lSlown Network\n&7Willkommen auf unserem Server!"
+  footer: "\n&7Online: &a{online} &7Spieler\n&6slown.network"
+
+# LabyMod Integration
+labymod:
+  server-name: "Slown Network"
+  game-mode: "Survival"
+  rich-presence:
+    enabled: true
+    details: "Spielt auf {server}"
+    state: "Modus: {gamemode}"
+  server-banner:
+    enabled: true
+    url: "https://slown.network/banner.png"
+  watermark:
+    enabled: true
+
+# Performance Settings
+performance:
+  save-interval: 300 # Sekunden zwischen automatischen Speicherungen
+  cleanup-interval: 600 # Sekunden zwischen Cache-Bereinigungen

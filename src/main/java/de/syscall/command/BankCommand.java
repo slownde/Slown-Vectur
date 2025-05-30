@@ -1,0 +1,202 @@
+package de.syscall.command;
+
+import de.syscall.SlownVectur;
+import de.syscall.util.ColorUtil;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+public class BankCommand implements CommandExecutor {
+
+    private final SlownVectur plugin;
+
+    public BankCommand(SlownVectur plugin) {
+        this.plugin = plugin;
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ColorUtil.colorize("&cDieser Command kann nur von Spielern ausgeführt werden!"));
+            return true;
+        }
+
+        Player player = (Player) sender;
+
+        if (args.length == 0) {
+            showBankInfo(player);
+            return true;
+        }
+
+        String subCommand = args[0].toLowerCase();
+
+        switch (subCommand) {
+            case "balance", "bal" -> {
+                showBankInfo(player);
+                return true;
+            }
+
+            case "deposit", "dep", "einzahlen" -> {
+                if (args.length < 2) {
+                    player.sendMessage(ColorUtil.colorize("&cVerwendung: /bank deposit <menge>"));
+                    return true;
+                }
+
+                if (args[1].equalsIgnoreCase("all") || args[1].equalsIgnoreCase("alles")) {
+                    int playerCoins = plugin.getCoinManager().getCoins(player);
+                    if (playerCoins <= 0) {
+                        player.sendMessage(ColorUtil.colorize("&cDu hast keine Coins zum Einzahlen!"));
+                        return true;
+                    }
+
+                    if (plugin.getCoinManager().depositCoins(player, playerCoins)) {
+                        player.sendMessage(ColorUtil.colorize("&7Du hast &aalle &6" + playerCoins + " Coins &7in deine Bank eingezahlt!"));
+                        showBankInfo(player);
+                    }
+                    return true;
+                }
+
+                try {
+                    int amount = Integer.parseInt(args[1]);
+                    if (amount <= 0) {
+                        player.sendMessage(ColorUtil.colorize("&cDie Menge muss positiv sein!"));
+                        return true;
+                    }
+
+                    if (plugin.getCoinManager().depositCoins(player, amount)) {
+                        player.sendMessage(ColorUtil.colorize("&7Du hast &6" + amount + " Coins &7in deine Bank eingezahlt!"));
+                        showBankInfo(player);
+                    } else {
+                        player.sendMessage(ColorUtil.colorize("&cDu hast nicht genug Coins! Du hast nur &6" + plugin.getCoinManager().getCoins(player) + " Coins&c."));
+                    }
+                } catch (NumberFormatException e) {
+                    player.sendMessage(ColorUtil.colorize("&cUngültige Zahl! Verwende eine ganze Zahl oder 'all'."));
+                }
+                return true;
+            }
+
+            case "withdraw", "with", "abheben" -> {
+                if (args.length < 2) {
+                    player.sendMessage(ColorUtil.colorize("&cVerwendung: /bank withdraw <menge>"));
+                    return true;
+                }
+
+                if (args[1].equalsIgnoreCase("all") || args[1].equalsIgnoreCase("alles")) {
+                    int bankCoins = plugin.getCoinManager().getBankCoins(player);
+                    if (bankCoins <= 0) {
+                        player.sendMessage(ColorUtil.colorize("&cDu hast keine Coins in der Bank zum Abheben!"));
+                        return true;
+                    }
+
+                    if (plugin.getCoinManager().withdrawCoins(player, bankCoins)) {
+                        player.sendMessage(ColorUtil.colorize("&7Du hast &aalle &6" + bankCoins + " Coins &7aus deiner Bank abgehoben!"));
+                        showBankInfo(player);
+                    }
+                    return true;
+                }
+
+                try {
+                    int amount = Integer.parseInt(args[1]);
+                    if (amount <= 0) {
+                        player.sendMessage(ColorUtil.colorize("&cDie Menge muss positiv sein!"));
+                        return true;
+                    }
+
+                    if (plugin.getCoinManager().withdrawCoins(player, amount)) {
+                        player.sendMessage(ColorUtil.colorize("&7Du hast &6" + amount + " Coins &7aus deiner Bank abgehoben!"));
+                        showBankInfo(player);
+                    } else {
+                        player.sendMessage(ColorUtil.colorize("&cDu hast nicht genug Coins in der Bank! Du hast nur &6" + plugin.getCoinManager().getBankCoins(player) + " Coins &cin der Bank."));
+                    }
+                } catch (NumberFormatException e) {
+                    player.sendMessage(ColorUtil.colorize("&cUngültige Zahl! Verwende eine ganze Zahl oder 'all'."));
+                }
+                return true;
+            }
+
+            case "transfer", "überweisen" -> {
+                if (args.length < 3) {
+                    player.sendMessage(ColorUtil.colorize("&cVerwendung: /bank transfer <spieler> <menge>"));
+                    return true;
+                }
+
+                Player target = plugin.getServer().getPlayer(args[1]);
+                if (target == null) {
+                    player.sendMessage(ColorUtil.colorize("&cSpieler nicht gefunden!"));
+                    return true;
+                }
+
+                if (target.equals(player)) {
+                    player.sendMessage(ColorUtil.colorize("&cDu kannst dir nicht selbst Coins überweisen!"));
+                    return true;
+                }
+
+                try {
+                    int amount = Integer.parseInt(args[2]);
+                    if (amount <= 0) {
+                        player.sendMessage(ColorUtil.colorize("&cDie Menge muss positiv sein!"));
+                        return true;
+                    }
+
+                    if (plugin.getCoinManager().removeCoins(player, amount)) {
+                        plugin.getCoinManager().addCoins(target, amount);
+
+                        player.sendMessage(ColorUtil.colorize("&7Du hast &6" + amount + " Coins &7an &a" + target.getName() + " &7überwiesen!"));
+                        target.sendMessage(ColorUtil.colorize("&7Du hast &6" + amount + " Coins &7von &a" + player.getName() + " &7erhalten!"));
+
+                        showBankInfo(player);
+                    } else {
+                        player.sendMessage(ColorUtil.colorize("&cDu hast nicht genug Coins! Du hast nur &6" + plugin.getCoinManager().getCoins(player) + " Coins&c."));
+                    }
+                } catch (NumberFormatException e) {
+                    player.sendMessage(ColorUtil.colorize("&cUngültige Zahl!"));
+                }
+                return true;
+            }
+
+            case "help", "hilfe" -> {
+                showBankHelp(player);
+                return true;
+            }
+
+            default -> {
+                player.sendMessage(ColorUtil.colorize("&cUnbekannter Subcommand! Verwende &6/bank help &cfür Hilfe."));
+                return true;
+            }
+        }
+    }
+
+    private void showBankInfo(Player player) {
+        int coins = plugin.getCoinManager().getCoins(player);
+        int bankCoins = plugin.getCoinManager().getBankCoins(player);
+        int totalCoins = coins + bankCoins;
+
+        player.sendMessage(ColorUtil.colorize("&6&l◆ Bank Information ◆"));
+        player.sendMessage(ColorUtil.colorize("&7&m──────────────────────"));
+        player.sendMessage(ColorUtil.colorize("&7💰 Geldbörse: &6" + formatCoins(coins)));
+        player.sendMessage(ColorUtil.colorize("&7🏦 Bank: &6" + formatCoins(bankCoins)));
+        player.sendMessage(ColorUtil.colorize("&7💎 Gesamt: &6" + formatCoins(totalCoins)));
+        player.sendMessage(ColorUtil.colorize("&7&m──────────────────────"));
+        player.sendMessage(ColorUtil.colorize("&7Verwende &6/bank help &7für Commands"));
+    }
+
+    private void showBankHelp(Player player) {
+        player.sendMessage(ColorUtil.colorize("&6&l◆ Bank Commands ◆"));
+        player.sendMessage(ColorUtil.colorize("&7&m───────────────────────"));
+        player.sendMessage(ColorUtil.colorize("&6/bank balance &7- Kontostand anzeigen"));
+        player.sendMessage(ColorUtil.colorize("&6/bank deposit <menge> &7- Coins einzahlen"));
+        player.sendMessage(ColorUtil.colorize("&6/bank withdraw <menge> &7- Coins abheben"));
+        player.sendMessage(ColorUtil.colorize("&6/bank transfer <spieler> <menge> &7- Coins überweisen"));
+        player.sendMessage(ColorUtil.colorize("&7&m───────────────────────"));
+        player.sendMessage(ColorUtil.colorize("&7💡 Tipp: Verwende &6'all' &7statt einer Zahl für alle Coins!"));
+    }
+
+    private String formatCoins(int coins) {
+        if (coins == 1) {
+            return coins + " Coin";
+        } else {
+            return coins + " Coins";
+        }
+    }
+}
