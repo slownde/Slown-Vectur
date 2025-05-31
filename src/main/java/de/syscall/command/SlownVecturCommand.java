@@ -5,11 +5,18 @@ import de.syscall.util.ColorUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class SlownVecturCommand implements CommandExecutor {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class SlownVecturCommand implements CommandExecutor, TabCompleter {
 
     private final SlownVectur plugin;
+    private final List<String> subCommands = Arrays.asList("reload", "performance", "perf");
 
     public SlownVecturCommand(SlownVectur plugin) {
         this.plugin = plugin;
@@ -57,6 +64,25 @@ public class SlownVecturCommand implements CommandExecutor {
                 return true;
             }
         }
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        List<String> completions = new ArrayList<>();
+
+        if (args.length == 1) {
+            String input = args[0].toLowerCase();
+            for (String subCommand : subCommands) {
+                if (subCommand.startsWith(input)) {
+                    if ((subCommand.equals("reload") && sender.hasPermission("slownvectur.reload")) ||
+                            ((subCommand.equals("performance") || subCommand.equals("perf")) && sender.hasPermission("slownvectur.performance"))) {
+                        completions.add(subCommand);
+                    }
+                }
+            }
+        }
+
+        return completions;
     }
 
     private void showPerformance(CommandSender sender) {

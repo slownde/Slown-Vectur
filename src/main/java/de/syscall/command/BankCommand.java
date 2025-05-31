@@ -5,12 +5,19 @@ import de.syscall.util.ColorUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class BankCommand implements CommandExecutor {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class BankCommand implements CommandExecutor, TabCompleter {
 
     private final SlownVectur plugin;
+    private final List<String> subCommands = Arrays.asList("balance", "bal", "deposit", "dep", "einzahlen", "withdraw", "with", "abheben", "transfer", "überweisen", "help", "hilfe");
 
     public BankCommand(SlownVectur plugin) {
         this.plugin = plugin;
@@ -164,6 +171,45 @@ public class BankCommand implements CommandExecutor {
                 return true;
             }
         }
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        List<String> completions = new ArrayList<>();
+
+        if (!(sender instanceof Player)) {
+            return completions;
+        }
+
+        if (args.length == 1) {
+            String input = args[0].toLowerCase();
+            for (String subCommand : subCommands) {
+                if (subCommand.startsWith(input)) {
+                    completions.add(subCommand);
+                }
+            }
+        } else if (args.length == 2) {
+            String subCommand = args[0].toLowerCase();
+
+            if (subCommand.equals("transfer") || subCommand.equals("überweisen")) {
+                String input = args[1].toLowerCase();
+                for (Player player : plugin.getServer().getOnlinePlayers()) {
+                    if (!player.equals(sender) && player.getName().toLowerCase().startsWith(input)) {
+                        completions.add(player.getName());
+                    }
+                }
+            } else if (subCommand.equals("deposit") || subCommand.equals("dep") || subCommand.equals("einzahlen") ||
+                    subCommand.equals("withdraw") || subCommand.equals("with") || subCommand.equals("abheben")) {
+                completions.addAll(Arrays.asList("all", "alles", "1", "10", "100", "1000"));
+            }
+        } else if (args.length == 3) {
+            String subCommand = args[0].toLowerCase();
+            if (subCommand.equals("transfer") || subCommand.equals("überweisen")) {
+                completions.addAll(Arrays.asList("1", "10", "100", "1000"));
+            }
+        }
+
+        return completions;
     }
 
     private void showBankInfo(Player player) {

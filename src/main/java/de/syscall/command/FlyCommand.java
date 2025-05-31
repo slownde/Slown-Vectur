@@ -5,10 +5,15 @@ import de.syscall.util.ColorUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class FlyCommand implements CommandExecutor {
+import java.util.ArrayList;
+import java.util.List;
+
+public class FlyCommand implements CommandExecutor, TabCompleter {
 
     private final SlownVectur plugin;
 
@@ -51,6 +56,22 @@ public class FlyCommand implements CommandExecutor {
 
         sender.sendMessage(ColorUtil.component("&cVerwendung: /fly [spieler]"));
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        List<String> completions = new ArrayList<>();
+
+        if (args.length == 1 && sender.hasPermission("slownvectur.fly.others")) {
+            String input = args[0].toLowerCase();
+            for (Player player : plugin.getServer().getOnlinePlayers()) {
+                if (player.getName().toLowerCase().startsWith(input)) {
+                    completions.add(player.getName());
+                }
+            }
+        }
+
+        return completions;
     }
 
     private void toggleFly(CommandSender sender, Player target) {

@@ -72,18 +72,43 @@ public class SlownVectur extends JavaPlugin {
     }
 
     private void registerCommands() {
-        getCommand("fly").setExecutor(new FlyCommand(this));
-        getCommand("gm").setExecutor(new GamemodeCommand(this));
-        getCommand("gms").setExecutor(new GamemodeCommand(this));
-        getCommand("gmc").setExecutor(new GamemodeCommand(this));
-        getCommand("gma").setExecutor(new GamemodeCommand(this));
-        getCommand("gmsp").setExecutor(new GamemodeCommand(this));
-        getCommand("day").setExecutor(new TimeCommand(this));
-        getCommand("night").setExecutor(new TimeCommand(this));
-        getCommand("slownvectur").setExecutor(new SlownVecturCommand(this));
-        getCommand("coins").setExecutor(new CoinsCommand(this));
-        getCommand("bank").setExecutor(new BankCommand(this));
-        getCommand("portal").setExecutor(new PortalCommand(this));
+        FlyCommand flyCommand = new FlyCommand(this);
+        getCommand("fly").setExecutor(flyCommand);
+        getCommand("fly").setTabCompleter(flyCommand);
+
+        GamemodeCommand gamemodeCommand = new GamemodeCommand(this);
+        getCommand("gm").setExecutor(gamemodeCommand);
+        getCommand("gm").setTabCompleter(gamemodeCommand);
+        getCommand("gms").setExecutor(gamemodeCommand);
+        getCommand("gms").setTabCompleter(gamemodeCommand);
+        getCommand("gmc").setExecutor(gamemodeCommand);
+        getCommand("gmc").setTabCompleter(gamemodeCommand);
+        getCommand("gma").setExecutor(gamemodeCommand);
+        getCommand("gma").setTabCompleter(gamemodeCommand);
+        getCommand("gmsp").setExecutor(gamemodeCommand);
+        getCommand("gmsp").setTabCompleter(gamemodeCommand);
+
+        TimeCommand timeCommand = new TimeCommand(this);
+        getCommand("day").setExecutor(timeCommand);
+        getCommand("day").setTabCompleter(timeCommand);
+        getCommand("night").setExecutor(timeCommand);
+        getCommand("night").setTabCompleter(timeCommand);
+
+        SlownVecturCommand slownVecturCommand = new SlownVecturCommand(this);
+        getCommand("slownvectur").setExecutor(slownVecturCommand);
+        getCommand("slownvectur").setTabCompleter(slownVecturCommand);
+
+        CoinsCommand coinsCommand = new CoinsCommand(this);
+        getCommand("coins").setExecutor(coinsCommand);
+        getCommand("coins").setTabCompleter(coinsCommand);
+
+        BankCommand bankCommand = new BankCommand(this);
+        getCommand("bank").setExecutor(bankCommand);
+        getCommand("bank").setTabCompleter(bankCommand);
+
+        PortalCommand portalCommand = new PortalCommand(this);
+        getCommand("portal").setExecutor(portalCommand);
+        getCommand("portal").setTabCompleter(portalCommand);
     }
 
     public void reload() {

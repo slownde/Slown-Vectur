@@ -6,11 +6,16 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class TimeCommand implements CommandExecutor {
+import java.util.ArrayList;
+import java.util.List;
+
+public class TimeCommand implements CommandExecutor, TabCompleter {
 
     private final SlownVectur plugin;
 
@@ -46,6 +51,26 @@ public class TimeCommand implements CommandExecutor {
 
         animateTimeChange(world, targetTime, timeName, sender);
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        List<String> completions = new ArrayList<>();
+
+        if (!sender.hasPermission("slownvectur.time")) {
+            return completions;
+        }
+
+        if (args.length == 1) {
+            String input = args[0].toLowerCase();
+            for (World world : plugin.getServer().getWorlds()) {
+                if (world.getName().toLowerCase().startsWith(input)) {
+                    completions.add(world.getName());
+                }
+            }
+        }
+
+        return completions;
     }
 
     private void animateTimeChange(World world, long targetTime, String timeName, CommandSender sender) {

@@ -5,12 +5,19 @@ import de.syscall.util.ColorUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class CoinsCommand implements CommandExecutor {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class CoinsCommand implements CommandExecutor, TabCompleter {
 
     private final SlownVectur plugin;
+    private final List<String> subCommands = Arrays.asList("balance", "bal", "add", "remove", "set");
 
     public CoinsCommand(SlownVectur plugin) {
         this.plugin = plugin;
@@ -157,5 +164,44 @@ public class CoinsCommand implements CommandExecutor {
                 return true;
             }
         }
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        List<String> completions = new ArrayList<>();
+
+        if (args.length == 1) {
+            String input = args[0].toLowerCase();
+            for (String subCommand : subCommands) {
+                if (subCommand.startsWith(input)) {
+                    if ((subCommand.equals("balance") || subCommand.equals("bal")) ||
+                            (sender.hasPermission("slownvectur.coins.admin") &&
+                                    (subCommand.equals("add") || subCommand.equals("remove") || subCommand.equals("set")))) {
+                        completions.add(subCommand);
+                    }
+                }
+            }
+        } else if (args.length == 2) {
+            String subCommand = args[0].toLowerCase();
+            if (subCommand.equals("balance") || subCommand.equals("bal") ||
+                    (sender.hasPermission("slownvectur.coins.admin") &&
+                            (subCommand.equals("add") || subCommand.equals("remove") || subCommand.equals("set")))) {
+
+                String input = args[1].toLowerCase();
+                for (Player player : plugin.getServer().getOnlinePlayers()) {
+                    if (player.getName().toLowerCase().startsWith(input)) {
+                        completions.add(player.getName());
+                    }
+                }
+            }
+        } else if (args.length == 3) {
+            String subCommand = args[0].toLowerCase();
+            if (sender.hasPermission("slownvectur.coins.admin") &&
+                    (subCommand.equals("add") || subCommand.equals("remove") || subCommand.equals("set"))) {
+                completions.addAll(Arrays.asList("1", "10", "100", "1000"));
+            }
+        }
+
+        return completions;
     }
 }

@@ -8,17 +8,24 @@ import org.bukkit.Particle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.*;
 
-public class PortalCommand implements CommandExecutor {
+public class PortalCommand implements CommandExecutor, TabCompleter {
 
     private final SlownVectur plugin;
     private final Map<UUID, Location> selections;
+    private final List<String> subCommands = Arrays.asList("create", "delete", "remove", "list", "info", "set", "select", "enable", "disable", "reload");
+    private final List<String> properties = Arrays.asList("action", "teleport", "permission", "frame-particle", "inner-particle", "spacing", "count", "speed", "days", "time", "value");
+    private final List<String> actionTypes = Arrays.asList("TELEPORT", "COMMAND", "SERVER", "WORLD");
+    private final List<String> particles = Arrays.asList("PORTAL", "ENCHANT", "FLAME", "HEART", "NAUTILUS", "ENCHANTMENT_TABLE", "SMOKE", "CLOUD", "REDSTONE", "SNOW_SHOVEL");
+    private final List<String> days = Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY");
 
     public PortalCommand(SlownVectur plugin) {
         this.plugin = plugin;
@@ -40,19 +47,142 @@ public class PortalCommand implements CommandExecutor {
         String subCommand = args[0].toLowerCase();
 
         switch (subCommand) {
-            case "create" -> handleCreate(sender, args);
-            case "delete", "remove" -> handleDelete(sender, args);
-            case "list" -> handleList(sender);
-            case "info" -> handleInfo(sender, args);
-            case "set" -> handleSet(sender, args);
-            case "select" -> handleSelect(sender, args);
-            case "enable" -> handleEnable(sender, args, true);
-            case "disable" -> handleEnable(sender, args, false);
-            case "reload" -> handleReload(sender);
-            default -> showHelp(sender);
+            case "create":
+                handleCreate(sender, args);
+                break;
+            case "delete":
+            case "remove":
+                handleDelete(sender, args);
+                break;
+            case "list":
+                handleList(sender);
+                break;
+            case "info":
+                handleInfo(sender, args);
+                break;
+            case "set":
+                handleSet(sender, args);
+                break;
+            case "select":
+                handleSelect(sender, args);
+                break;
+            case "enable":
+                handleEnable(sender, args, true);
+                break;
+            case "disable":
+                handleEnable(sender, args, false);
+                break;
+            case "reload":
+                handleReload(sender);
+                break;
+            default:
+                showHelp(sender);
+                break;
         }
 
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        List<String> completions = new ArrayList<>();
+
+        if (!sender.hasPermission("slownvectur.portal")) {
+            return completions;
+        }
+
+        if (args.length == 1) {
+            String input = args[0].toLowerCase();
+            for (String subCommand : subCommands) {
+                if (subCommand.startsWith(input)) {
+                    completions.add(subCommand);
+                }
+            }
+        } else if (args.length == 2) {
+            String subCommand = args[0].toLowerCase();
+            String input = args[1].toLowerCase();
+
+            switch (subCommand) {
+                case "create":
+                    completions.add("<portal-name>");
+                    break;
+                case "delete":
+                case "remove":
+                case "info":
+                case "enable":
+                case "disable":
+                case "set":
+                    for (Portal portal : plugin.getPortalManager().getAllPortals()) {
+                        if (portal.getName().toLowerCase().startsWith(input)) {
+                            completions.add(portal.getName());
+                        }
+                    }
+                    break;
+            }
+        } else if (args.length == 3) {
+            String subCommand = args[0].toLowerCase();
+            String input = args[2].toLowerCase();
+
+            if (subCommand.equals("set")) {
+                for (String property : properties) {
+                    if (property.startsWith(input)) {
+                        completions.add(property);
+                    }
+                }
+            }
+        } else if (args.length == 4) {
+            String subCommand = args[0].toLowerCase();
+            String property = args[2].toLowerCase();
+            String input = args[3].toLowerCase();
+
+            if (subCommand.equals("set")) {
+                switch (property) {
+                    case "action":
+                        for (String actionType : actionTypes) {
+                            if (actionType.toLowerCase().startsWith(input)) {
+                                completions.add(actionType);
+                            }
+                        }
+                        break;
+                    case "frame-particle":
+                    case "inner-particle":
+                        for (String particle : particles) {
+                            if (particle.toLowerCase().startsWith(input)) {
+                                completions.add(particle);
+                            }
+                        }
+                        break;
+                    case "permission":
+                        completions.addAll(Arrays.asList("none", "slownvectur.portal.use", "slownvectur.portal.event"));
+                        break;
+                    case "spacing":
+                        completions.addAll(Arrays.asList("0.3", "0.5", "1.0"));
+                        break;
+                    case "count":
+                        completions.addAll(Arrays.asList("1", "5", "10"));
+                        break;
+                    case "speed":
+                        completions.addAll(Arrays.asList("1", "2", "5"));
+                        break;
+                    case "days":
+                        for (String day : days) {
+                            if (day.toLowerCase().startsWith(input)) {
+                                completions.add(day);
+                            }
+                        }
+                        completions.add("none");
+                        break;
+                    case "time":
+                        completions.addAll(Arrays.asList("20:00-22:00", "18:00-20:00", "none"));
+                        break;
+                    case "value":
+                        completions.add("<wert>");
+                        break;
+                }
+            }
+        }
+
+        return completions;
     }
 
     private void handleCreate(CommandSender sender, String[] args) {
@@ -175,7 +305,7 @@ public class PortalCommand implements CommandExecutor {
         }
 
         switch (property) {
-            case "action" -> {
+            case "action":
                 try {
                     Portal.ActionType actionType = Portal.ActionType.valueOf(value.toUpperCase());
                     portal.setActionType(actionType);
@@ -184,8 +314,8 @@ public class PortalCommand implements CommandExecutor {
                     sender.sendMessage(ColorUtil.component("&cUngültige Aktion! Verfügbar: TELEPORT, COMMAND, SERVER, WORLD"));
                     return;
                 }
-            }
-            case "teleport" -> {
+                break;
+            case "teleport":
                 if (!(sender instanceof Player player)) {
                     sender.sendMessage(ColorUtil.component("&cDieser Command kann nur von Spielern ausgeführt werden!"));
                     return;
@@ -193,12 +323,12 @@ public class PortalCommand implements CommandExecutor {
                 portal.setTeleportLocation(player.getLocation());
                 portal.setActionType(Portal.ActionType.TELEPORT);
                 sender.sendMessage(ColorUtil.component("&7Teleport-Location gesetzt!"));
-            }
-            case "permission" -> {
+                break;
+            case "permission":
                 portal.setPermission(value.equals("none") ? null : value);
                 sender.sendMessage(ColorUtil.component("&7Permission auf &6" + value + " &7gesetzt!"));
-            }
-            case "frame-particle" -> {
+                break;
+            case "frame-particle":
                 try {
                     Particle particle = Particle.valueOf(value.toUpperCase());
                     portal.setFrameParticle(particle);
@@ -207,8 +337,8 @@ public class PortalCommand implements CommandExecutor {
                     sender.sendMessage(ColorUtil.component("&cUngültiger Partikel!"));
                     return;
                 }
-            }
-            case "inner-particle" -> {
+                break;
+            case "inner-particle":
                 try {
                     Particle particle = Particle.valueOf(value.toUpperCase());
                     portal.setInnerParticle(particle);
@@ -217,8 +347,8 @@ public class PortalCommand implements CommandExecutor {
                     sender.sendMessage(ColorUtil.component("&cUngültiger Partikel!"));
                     return;
                 }
-            }
-            case "spacing" -> {
+                break;
+            case "spacing":
                 try {
                     double spacing = Double.parseDouble(value);
                     portal.setParticleSpacing(spacing);
@@ -227,8 +357,8 @@ public class PortalCommand implements CommandExecutor {
                     sender.sendMessage(ColorUtil.component("&cUngültige Zahl!"));
                     return;
                 }
-            }
-            case "count" -> {
+                break;
+            case "count":
                 try {
                     int count = Integer.parseInt(value);
                     portal.setParticleCount(count);
@@ -237,8 +367,8 @@ public class PortalCommand implements CommandExecutor {
                     sender.sendMessage(ColorUtil.component("&cUngültige Zahl!"));
                     return;
                 }
-            }
-            case "speed" -> {
+                break;
+            case "speed":
                 try {
                     int speed = Integer.parseInt(value);
                     portal.setParticleSpeed(speed);
@@ -247,27 +377,27 @@ public class PortalCommand implements CommandExecutor {
                     sender.sendMessage(ColorUtil.component("&cUngültige Zahl!"));
                     return;
                 }
-            }
-            case "days" -> {
+                break;
+            case "days":
                 if (value.equals("none")) {
                     portal.setAllowedDays(null);
                     sender.sendMessage(ColorUtil.component("&7Tagesbeschränkung entfernt!"));
                 } else {
                     String[] dayNames = value.split(",");
-                    Set<DayOfWeek> days = EnumSet.noneOf(DayOfWeek.class);
+                    Set<DayOfWeek> allowedDays = EnumSet.noneOf(DayOfWeek.class);
                     for (String dayName : dayNames) {
                         try {
-                            days.add(DayOfWeek.valueOf(dayName.trim().toUpperCase()));
+                            allowedDays.add(DayOfWeek.valueOf(dayName.trim().toUpperCase()));
                         } catch (IllegalArgumentException e) {
                             sender.sendMessage(ColorUtil.component("&cUngültiger Tag: " + dayName));
                             return;
                         }
                     }
-                    portal.setAllowedDays(days);
-                    sender.sendMessage(ColorUtil.component("&7Erlaubte Tage gesetzt: &6" + days.toString()));
+                    portal.setAllowedDays(allowedDays);
+                    sender.sendMessage(ColorUtil.component("&7Erlaubte Tage gesetzt: &6" + allowedDays.toString()));
                 }
-            }
-            case "time" -> {
+                break;
+            case "time":
                 if (value.equals("none")) {
                     portal.setStartTime(null);
                     portal.setEndTime(null);
@@ -289,15 +419,14 @@ public class PortalCommand implements CommandExecutor {
                         return;
                     }
                 }
-            }
-            case "value" -> {
+                break;
+            case "value":
                 portal.setActionValue(value);
                 sender.sendMessage(ColorUtil.component("&7Aktionswert auf &6" + value + " &7gesetzt!"));
-            }
-            default -> {
+                break;
+            default:
                 sender.sendMessage(ColorUtil.component("&cUnbekannte Property!"));
                 return;
-            }
         }
 
         plugin.getPortalManager().updatePortal(portal);
