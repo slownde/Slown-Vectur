@@ -77,13 +77,19 @@ public class PortalManager {
 
         Portal portal = new Portal(name);
 
-        Location corner1 = loadLocation(section.getConfigurationSection("corner1"));
-        Location corner2 = loadLocation(section.getConfigurationSection("corner2"));
+        World world = getWorldFromSection(section);
+        if (world == null) {
+            plugin.getLogger().warning("Portal " + name + " has invalid world");
+            return null;
+        }
+
+        Location corner1 = loadLocation(section.getConfigurationSection("corner1"), world);
+        Location corner2 = loadLocation(section.getConfigurationSection("corner2"), world);
         if (corner1 != null && corner2 != null) {
             portal.setBounds(corner1, corner2);
         }
 
-        Location teleport = loadLocation(section.getConfigurationSection("teleport"));
+        Location teleport = loadLocation(section.getConfigurationSection("teleport"), world);
         if (teleport != null) {
             portal.setTeleportLocation(teleport);
         }
@@ -106,6 +112,26 @@ public class PortalManager {
         loadSchedule(portal, section.getConfigurationSection("schedule"));
 
         return portal;
+    }
+
+    private World getWorldFromSection(ConfigurationSection section) {
+        String worldName = section.getString("world");
+        if (worldName == null) {
+            ConfigurationSection corner1 = section.getConfigurationSection("corner1");
+            if (corner1 != null) {
+                worldName = corner1.getString("world");
+            }
+        }
+        if (worldName == null) {
+            ConfigurationSection teleport = section.getConfigurationSection("teleport");
+            if (teleport != null) {
+                worldName = teleport.getString("world");
+            }
+        }
+        if (worldName == null) {
+            return plugin.getServer().getWorlds().getFirst();
+        }
+        return plugin.getServer().getWorld(worldName);
     }
 
     private void loadSchedule(Portal portal, ConfigurationSection section) {
@@ -132,11 +158,12 @@ public class PortalManager {
         }
     }
 
-    private Location loadLocation(ConfigurationSection section) {
+    private Location loadLocation(ConfigurationSection section, World defaultWorld) {
         if (section == null) return null;
 
-        World world = plugin.getServer().getWorld(section.getString("world"));
-        if (world == null) return null;
+        String worldName = section.getString("world");
+        World world = worldName != null ? plugin.getServer().getWorld(worldName) : defaultWorld;
+        if (world == null) world = defaultWorld;
 
         return new Location(
                 world,
@@ -190,9 +217,13 @@ public class PortalManager {
         String path = "portals." + portal.getName();
 
         BoundingBox bounds = portal.getBounds();
-        if (bounds != null) {
-            saveLocation(path + ".corner1", new Location(null, bounds.getMinX(), bounds.getMinY(), bounds.getMinZ()));
-            saveLocation(path + ".corner2", new Location(null, bounds.getMaxX(), bounds.getMaxY(), bounds.getMaxZ()));
+        if (bounds != null && !portals.isEmpty()) {
+            World world = getPortalWorld(portal);
+            if (world != null) {
+                config.set(path + ".world", world.getName());
+                saveLocation(path + ".corner1", new Location(world, bounds.getMinX(), bounds.getMinY(), bounds.getMinZ()));
+                saveLocation(path + ".corner2", new Location(world, bounds.getMaxX(), bounds.getMaxY(), bounds.getMaxZ()));
+            }
         }
 
         Location teleport = portal.getTeleportLocation();
@@ -222,6 +253,14 @@ public class PortalManager {
         }
 
         saveConfig();
+    }
+
+    private World getPortalWorld(Portal portal) {
+        Location teleport = portal.getTeleportLocation();
+        if (teleport != null && teleport.getWorld() != null) {
+            return teleport.getWorld();
+        }
+        return plugin.getServer().getWorlds().getFirst();
     }
 
     private void saveLocation(String path, Location location) {
@@ -269,22 +308,11 @@ public class PortalManager {
             if (!portal.isEnabled() || portal.getBounds() == null) continue;
 
             BoundingBox bounds = portal.getBounds();
-            World world = getWorldFromBounds(bounds);
+            World world = getPortalWorld(portal);
             if (world == null || !hasNearbyPlayers(world, bounds)) continue;
 
             spawnPortalParticles(world, bounds, portal);
         }
-    }
-
-    private World getWorldFromBounds(BoundingBox bounds) {
-        for (World world : plugin.getServer().getWorlds()) {
-            for (Portal portal : portals.values()) {
-                if (portal.getBounds() == bounds && portal.getTeleportLocation() != null) {
-                    return portal.getTeleportLocation().getWorld();
-                }
-            }
-        }
-        return plugin.getServer().getWorlds().getFirst();
     }
 
     private boolean hasNearbyPlayers(World world, BoundingBox bounds) {

@@ -43,7 +43,7 @@ public class Portal {
     }
 
     public void setBounds(Location corner1, Location corner2) {
-        if (corner1 != null && corner2 != null && corner1.getWorld().equals(corner2.getWorld())) {
+        if (corner1 != null && corner2 != null && corner1.getWorld() != null && corner2.getWorld() != null && corner1.getWorld().equals(corner2.getWorld())) {
             double minX = Math.min(corner1.getX(), corner2.getX());
             double maxX = Math.max(corner1.getX(), corner2.getX());
             double minY = Math.min(corner1.getY(), corner2.getY());
