@@ -1,0 +1,76 @@
+﻿# Portal Configuration
+# Beispiel Portal Konfigurationen
+
+portals:
+  # Beispiel Portal mit Zeitbeschränkung
+  event-portal:
+    enabled: true
+    corner1:
+      world: "world"
+      x: 100.0
+      y: 64.0
+      z: 100.0
+      yaw: 0.0
+      pitch: 0.0
+    corner2:
+      world: "world"
+      x: 110.0
+      y: 74.0
+      z: 110.0
+      yaw: 0.0
+      pitch: 0.0
+    teleport-location:
+      world: "world_nether"
+      x: 0.0
+      y: 64.0
+      z: 0.0
+      yaw: 0.0
+      pitch: 0.0
+    action:
+      type: "TELEPORT"
+      value: null
+    permission: "slownvectur.portal.event"
+    particles:
+      frame: "PORTAL"
+      inner: "ENCHANTMENT_TABLE"
+      speed: 1
+      count: 1
+      spacing: 0.3
+    schedule:
+      days: ["SATURDAY", "SUNDAY"]
+      start-time: "20:00"
+      end-time: "22:00"
+  
+  # Beispiel Command Portal
+  command-portal:
+    enabled: true
+    corner1:
+      world: "world"
+      x: 200.0
+      y: 64.0
+      z: 200.0
+      yaw: 0.0
+      pitch: 0.0
+    corner2:
+      world: "world"
+      x: 205.0
+      y: 69.0
+      z: 205.0
+      yaw: 0.0
+      pitch: 0.0
+    action:
+      type: "COMMAND"
+      value: "give {player} diamond 1"
+    permission: null
+    particles:
+      frame: "FLAME"
+      inner: "HEART"
+      speed: 1
+      count: 1
+      spacing: 0.3
+
+# Globale Portal Einstellungen
+settings:
+  cooldown: 3000  # Millisekunden zwischen Portal-Nutzungen
+  particle-update-interval: 20  # Ticks zwischen Partikel-Updates
+  check-interval: 5  # Ticks zwischen Portal-Checks

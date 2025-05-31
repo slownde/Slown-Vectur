@@ -39,6 +39,15 @@ permissions:
   slownvectur.coins.admin:
     description: Coins verwalten
     default: op
+  slownvectur.portal:
+    description: Portale verwalten
+    default: op
+  slownvectur.portal.use:
+    description: Portale nutzen
+    default: true
+  slownvectur.portal.event:
+    description: Event Portale nutzen
+    default: false
 
 commands:
   fly:
@@ -75,3 +84,7 @@ commands:
   bank:
     description: Bank verwalten
     usage: /bank <deposit|withdraw|balance> <menge>
+  portal:
+    description: Portal verwalten
+    usage: /portal <create|delete|list|info|set|select|enable|disable|reload>
+    permission: slownvectur.portal

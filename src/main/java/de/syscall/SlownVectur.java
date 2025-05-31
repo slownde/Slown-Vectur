@@ -1,5 +1,6 @@
 package de.syscall;
 
+import de.syscall.api.VecturAPI;
 import de.syscall.manager.*;
 import de.syscall.listener.*;
 import de.syscall.command.*;
@@ -9,6 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class SlownVectur extends JavaPlugin {
 
     private static SlownVectur instance;
+    private static VecturAPI api;
 
     private DatabaseManager databaseManager;
     private PlayerDataManager playerDataManager;
@@ -18,6 +20,7 @@ public class SlownVectur extends JavaPlugin {
     private TablistManager tablistManager;
     private CoinManager coinManager;
     private LabyModManager labyModManager;
+    private PortalManager portalManager;
 
     @Override
     public void onEnable() {
@@ -33,6 +36,9 @@ public class SlownVectur extends JavaPlugin {
         this.tablistManager = new TablistManager(this);
         this.coinManager = new CoinManager(this);
         this.labyModManager = new LabyModManager(this);
+        this.portalManager = new PortalManager(this);
+
+        api = new VecturAPI(this);
 
         registerListeners();
         registerCommands();
@@ -42,6 +48,10 @@ public class SlownVectur extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (portalManager != null) {
+            portalManager.shutdown();
+        }
+
         if (databaseManager != null) {
             databaseManager.close();
         }
@@ -58,6 +68,7 @@ public class SlownVectur extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerQuitListener(this), this);
         getServer().getPluginManager().registerEvents(new AsyncPlayerChatListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerRankChangeListener(this), this);
+        getServer().getPluginManager().registerEvents(new PortalListener(this), this);
     }
 
     private void registerCommands() {
@@ -72,6 +83,7 @@ public class SlownVectur extends JavaPlugin {
         getCommand("slownvectur").setExecutor(new SlownVecturCommand(this));
         getCommand("coins").setExecutor(new CoinsCommand(this));
         getCommand("bank").setExecutor(new BankCommand(this));
+        getCommand("portal").setExecutor(new PortalCommand(this));
     }
 
     public void reload() {
@@ -80,10 +92,15 @@ public class SlownVectur extends JavaPlugin {
         chatManager.reload();
         scoreboardManager.reload();
         tablistManager.reload();
+        portalManager.reloadConfig();
     }
 
     public static SlownVectur getInstance() {
         return instance;
+    }
+
+    public static VecturAPI getAPI() {
+        return api;
     }
 
     public DatabaseManager getDatabaseManager() {
@@ -116,5 +133,9 @@ public class SlownVectur extends JavaPlugin {
 
     public LabyModManager getLabyModManager() {
         return labyModManager;
+    }
+
+    public PortalManager getPortalManager() {
+        return portalManager;
     }
 }
