@@ -21,6 +21,9 @@ public class SlownVectur extends JavaPlugin {
     private CoinManager coinManager;
     private LabyModManager labyModManager;
     private PortalManager portalManager;
+    private StateBankManager stateBankManager;
+    private ShopManager shopManager;
+    private HologramManager hologramManager;
 
     @Override
     public void onEnable() {
@@ -37,6 +40,9 @@ public class SlownVectur extends JavaPlugin {
         this.coinManager = new CoinManager(this);
         this.labyModManager = new LabyModManager(this);
         this.portalManager = new PortalManager(this);
+        this.stateBankManager = new StateBankManager(this);
+        this.hologramManager = new HologramManager(this);
+        this.shopManager = new ShopManager(this);
 
         api = new VecturAPI(this);
 
@@ -48,6 +54,10 @@ public class SlownVectur extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (hologramManager != null) {
+            hologramManager.cleanup();
+        }
+
         if (portalManager != null) {
             portalManager.shutdown();
         }
@@ -68,6 +78,8 @@ public class SlownVectur extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerQuitListener(this), this);
         getServer().getPluginManager().registerEvents(new AsyncPlayerChatListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerRankChangeListener(this), this);
+        getServer().getPluginManager().registerEvents(new ShopClickListener(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerMoveListener(this), this);
     }
 
     private void registerCommands() {
@@ -108,6 +120,14 @@ public class SlownVectur extends JavaPlugin {
         PortalCommand portalCommand = new PortalCommand(this);
         getCommand("portal").setExecutor(portalCommand);
         getCommand("portal").setTabCompleter(portalCommand);
+
+        StateBankCommand stateBankCommand = new StateBankCommand(this);
+        getCommand("statebank").setExecutor(stateBankCommand);
+        getCommand("statebank").setTabCompleter(stateBankCommand);
+
+        ShopCommand shopCommand = new ShopCommand(this);
+        getCommand("shop").setExecutor(shopCommand);
+        getCommand("shop").setTabCompleter(shopCommand);
     }
 
     public void reload() {
@@ -117,6 +137,8 @@ public class SlownVectur extends JavaPlugin {
         scoreboardManager.reload();
         tablistManager.reload();
         portalManager.reloadConfig();
+        stateBankManager.reload();
+        shopManager.reloadConfig();
     }
 
     public static SlownVectur getInstance() {
@@ -161,5 +183,17 @@ public class SlownVectur extends JavaPlugin {
 
     public PortalManager getPortalManager() {
         return portalManager;
+    }
+
+    public StateBankManager getStateBankManager() {
+        return stateBankManager;
+    }
+
+    public ShopManager getShopManager() {
+        return shopManager;
+    }
+
+    public HologramManager getHologramManager() {
+        return hologramManager;
     }
 }

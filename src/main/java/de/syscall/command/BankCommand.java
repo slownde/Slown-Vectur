@@ -17,7 +17,7 @@ import java.util.List;
 public class BankCommand implements CommandExecutor, TabCompleter {
 
     private final SlownVectur plugin;
-    private final List<String> subCommands = Arrays.asList("balance", "bal", "deposit", "dep", "einzahlen", "withdraw", "with", "abheben", "transfer", "überweisen", "help", "hilfe");
+    private final List<String> subCommands = Arrays.asList("balance", "bal", "deposit", "dep", "einzahlen", "withdraw", "with", "abheben", "transfer", "überweisen", "state", "help", "hilfe");
 
     public BankCommand(SlownVectur plugin) {
         this.plugin = plugin;
@@ -161,6 +161,25 @@ public class BankCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
 
+            case "state" -> {
+                if (!player.hasPermission("slownvectur.statebank.view")) {
+                    player.sendMessage(ColorUtil.component("&cDu hast keine Berechtigung für diesen Command!"));
+                    return true;
+                }
+
+                int stateBankBalance = plugin.getStateBankManager().getStateBankBalance();
+                double taxRate = plugin.getStateBankManager().getTaxRate() * 100;
+                int threshold = plugin.getStateBankManager().getRichPlayerThreshold();
+
+                player.sendMessage(ColorUtil.component("&6&l◆ Staatsbank Information ◆"));
+                player.sendMessage(ColorUtil.component("&7&m──────────────────────────"));
+                player.sendMessage(ColorUtil.component("&7🏛️ Staatsbank Guthaben: &6" + stateBankBalance + " Coins"));
+                player.sendMessage(ColorUtil.component("&7📊 Steuersatz: &6" + String.format("%.1f", taxRate) + "%"));
+                player.sendMessage(ColorUtil.component("&7💎 Reichtums-Schwelle: &6" + threshold + " Coins"));
+                player.sendMessage(ColorUtil.component("&7&m──────────────────────────"));
+                return true;
+            }
+
             case "help", "hilfe" -> {
                 showBankHelp(player);
                 return true;
@@ -185,6 +204,9 @@ public class BankCommand implements CommandExecutor, TabCompleter {
             String input = args[0].toLowerCase();
             for (String subCommand : subCommands) {
                 if (subCommand.startsWith(input)) {
+                    if (subCommand.equals("state") && !sender.hasPermission("slownvectur.statebank.view")) {
+                        continue;
+                    }
                     completions.add(subCommand);
                 }
             }
@@ -222,6 +244,13 @@ public class BankCommand implements CommandExecutor, TabCompleter {
         player.sendMessage(ColorUtil.component("&7💰 Geldbörse: &6" + formatCoins(coins)));
         player.sendMessage(ColorUtil.component("&7🏦 Bank: &6" + formatCoins(bankCoins)));
         player.sendMessage(ColorUtil.component("&7💎 Gesamt: &6" + formatCoins(totalCoins)));
+
+        int threshold = plugin.getStateBankManager().getRichPlayerThreshold();
+        if (totalCoins >= threshold) {
+            double taxRate = plugin.getStateBankManager().getTaxRate() * 100;
+            player.sendMessage(ColorUtil.component("&7⚠️ Steuerpflichtig: &c" + String.format("%.1f", taxRate) + "%"));
+        }
+
         player.sendMessage(ColorUtil.component("&7&m──────────────────────"));
         player.sendMessage(ColorUtil.component("&7Verwende &6/bank help &7für Commands"));
     }
@@ -233,6 +262,9 @@ public class BankCommand implements CommandExecutor, TabCompleter {
         player.sendMessage(ColorUtil.component("&6/bank deposit <menge> &7- Coins einzahlen"));
         player.sendMessage(ColorUtil.component("&6/bank withdraw <menge> &7- Coins abheben"));
         player.sendMessage(ColorUtil.component("&6/bank transfer <spieler> <menge> &7- Coins überweisen"));
+        if (player.hasPermission("slownvectur.statebank.view")) {
+            player.sendMessage(ColorUtil.component("&6/bank state &7- Staatsbank anzeigen"));
+        }
         player.sendMessage(ColorUtil.component("&7&m───────────────────────"));
         player.sendMessage(ColorUtil.component("&7💡 Tipp: Verwende &6'all' &7statt einer Zahl für alle Coins!"));
     }

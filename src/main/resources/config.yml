@@ -43,6 +43,16 @@ labymod:
   watermark:
     enabled: true
 
+# StateBank Configuration
+statebank:
+  balance: 0
+  tax-rate: 0.05  # 5% Steuersatz für reiche Spieler
+  rich-threshold: 10000  # Ab 10.000 Coins werden Steuern fällig
+
+# Shop System Configuration
+shop:
+  default-tax-rate: 0.03  # 3% Steuern auf alle Shop-Verkäufe
+
 # Performance Settings
 performance:
   save-interval: 300 # Sekunden zwischen automatischen Speicherungen

@@ -48,6 +48,15 @@ permissions:
   slownvectur.portal.event:
     description: Event Portale nutzen
     default: false
+  slownvectur.statebank.admin:
+    description: Staatsbank verwalten
+    default: op
+  slownvectur.statebank.view:
+    description: Staatsbank anzeigen
+    default: true
+  slownvectur.shop.admin:
+    description: Shop-System verwalten
+    default: op
 
 commands:
   fly:
@@ -83,8 +92,15 @@ commands:
     usage: /coins <add|remove|set|balance> [spieler] [menge]
   bank:
     description: Bank verwalten
-    usage: /bank <deposit|withdraw|balance> <menge>
+    usage: /bank <deposit|withdraw|balance|transfer|state> <menge>
   portal:
     description: Portal verwalten
     usage: /portal <create|delete|list|info|set|select|enable|disable|reload>
     permission: slownvectur.portal
+  statebank:
+    description: Staatsbank verwalten
+    usage: /statebank <balance|set|add|remove|taxrate|threshold|info>
+    permission: slownvectur.statebank.admin
+  shop:
+    description: Shop-System verwalten
+    usage: /shop <create|delete|list|info|toggle|reload|taxrate>
