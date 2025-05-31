@@ -2,7 +2,6 @@ package de.syscall.manager;
 
 import de.syscall.SlownVectur;
 import de.syscall.data.PlayerData;
-import de.syscall.util.ColorUtil;
 import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.entity.Player;
 
@@ -23,7 +22,7 @@ public class ScoreboardManager {
 
     private void loadConfig() {
         plugin.reloadConfig();
-        this.title = ColorUtil.colorize(plugin.getConfig().getString("scoreboard.title", "&6&lSlown Network"));
+        this.title = plugin.getConfig().getString("scoreboard.title", "&6&lSlown Network");
         this.lines = plugin.getConfig().getStringList("scoreboard.lines");
 
         if (lines.isEmpty()) {
@@ -43,7 +42,10 @@ public class ScoreboardManager {
 
     public void createBoard(Player player) {
         FastBoard board = new FastBoard(player);
-        board.updateTitle(title);
+
+        String processedTitle = translateLegacyColors(title);
+        board.updateTitle(processedTitle);
+
         boards.put(player.getUniqueId(), board);
         updateBoard(player);
     }
@@ -67,11 +69,23 @@ public class ScoreboardManager {
                     .replace("{bank_coins}", String.valueOf(data.getBankCoins()))
                     .replace("{playtime}", formatPlaytime(data.getPlayTime()));
 
-            processed = ColorUtil.colorize(processed);
+            processed = translateLegacyColors(processed);
             processedLines.add(processed);
         }
 
         board.updateLines(processedLines);
+    }
+
+    private String translateLegacyColors(String text) {
+        if (text == null) return "";
+
+        return text
+                .replace("&0", "§0").replace("&1", "§1").replace("&2", "§2").replace("&3", "§3")
+                .replace("&4", "§4").replace("&5", "§5").replace("&6", "§6").replace("&7", "§7")
+                .replace("&8", "§8").replace("&9", "§9").replace("&a", "§a").replace("&b", "§b")
+                .replace("&c", "§c").replace("&d", "§d").replace("&e", "§e").replace("&f", "§f")
+                .replace("&k", "§k").replace("&l", "§l").replace("&m", "§m").replace("&n", "§n")
+                .replace("&o", "§o").replace("&r", "§r");
     }
 
     public void removeBoard(Player player) {
