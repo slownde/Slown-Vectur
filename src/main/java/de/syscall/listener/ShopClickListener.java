@@ -30,12 +30,21 @@ public class ShopClickListener implements Listener {
 
         if (shop == null) return;
 
-        event.setCancelled(true);
-
         if (shop.getOwner().equals(player.getUniqueId())) {
+            if (player.isSneaking()) {
+                return;
+            }
+
+            event.setCancelled(true);
             showShopOwnerInfo(player, shop);
             return;
         }
+
+        if (player.hasPermission("slownvectur.shop.admin") && player.isSneaking()) {
+            return;
+        }
+
+        event.setCancelled(true);
 
         if (!shop.isActive()) {
             player.sendMessage(ColorUtil.component("&cDieser Shop ist nicht aktiv!"));
@@ -63,6 +72,7 @@ public class ShopClickListener implements Listener {
         player.sendMessage(ColorUtil.component("&7Status: " + (shop.isActive() ? "&aAktiv" : "&cInaktiv")));
         player.sendMessage(ColorUtil.component("&7&m──────────────────────────"));
         player.sendMessage(ColorUtil.component("&7Verwende &6/shop toggle " + shop.getName() + " &7zum Aktivieren/Deaktivieren"));
+        player.sendMessage(ColorUtil.component("&7Verwende &6Shift+Rechtsklick &7zum Nachfüllen"));
     }
 
     private void showShopBuyerInfo(Player player, Shop shop) {
