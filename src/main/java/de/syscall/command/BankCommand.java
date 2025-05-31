@@ -17,7 +17,7 @@ import java.util.List;
 public class BankCommand implements CommandExecutor, TabCompleter {
 
     private final SlownVectur plugin;
-    private final List<String> subCommands = Arrays.asList("balance", "bal", "deposit", "dep", "einzahlen", "withdraw", "with", "abheben", "transfer", "überweisen", "state", "help", "hilfe");
+    private final List<String> subCommands = Arrays.asList("balance", "bal", "deposit", "dep", "einzahlen", "withdraw", "with", "abheben", "transfer", "überweisen", "help", "hilfe");
 
     public BankCommand(SlownVectur plugin) {
         this.plugin = plugin;
@@ -50,34 +50,34 @@ public class BankCommand implements CommandExecutor, TabCompleter {
                 }
 
                 if (args[1].equalsIgnoreCase("all") || args[1].equalsIgnoreCase("alles")) {
-                    int playerCoins = plugin.getCoinManager().getCoins(player);
+                    double playerCoins = plugin.getCoinManager().getCoins(player);
                     if (playerCoins <= 0) {
                         player.sendMessage(ColorUtil.component("&cDu hast keine Coins zum Einzahlen!"));
                         return true;
                     }
 
                     if (plugin.getCoinManager().depositCoins(player, playerCoins)) {
-                        player.sendMessage(ColorUtil.component("&7Du hast &aalle &6" + playerCoins + " Coins &7in deine Bank eingezahlt!"));
+                        player.sendMessage(ColorUtil.component("&7Du hast &aalle &6" + String.format("%.2f", playerCoins) + " Coins &7in deine Bank eingezahlt!"));
                         showBankInfo(player);
                     }
                     return true;
                 }
 
                 try {
-                    int amount = Integer.parseInt(args[1]);
+                    double amount = Double.parseDouble(args[1]);
                     if (amount <= 0) {
                         player.sendMessage(ColorUtil.component("&cDie Menge muss positiv sein!"));
                         return true;
                     }
 
                     if (plugin.getCoinManager().depositCoins(player, amount)) {
-                        player.sendMessage(ColorUtil.component("&7Du hast &6" + amount + " Coins &7in deine Bank eingezahlt!"));
+                        player.sendMessage(ColorUtil.component("&7Du hast &6" + String.format("%.2f", amount) + " Coins &7in deine Bank eingezahlt!"));
                         showBankInfo(player);
                     } else {
-                        player.sendMessage(ColorUtil.component("&cDu hast nicht genug Coins! Du hast nur &6" + plugin.getCoinManager().getCoins(player) + " Coins&c."));
+                        player.sendMessage(ColorUtil.component("&cDu hast nicht genug Coins! Du hast nur &6" + String.format("%.2f", plugin.getCoinManager().getCoins(player)) + " Coins&c."));
                     }
                 } catch (NumberFormatException e) {
-                    player.sendMessage(ColorUtil.component("&cUngültige Zahl! Verwende eine ganze Zahl oder 'all'."));
+                    player.sendMessage(ColorUtil.component("&cUngültige Zahl! Verwende eine Zahl oder 'all'."));
                 }
                 return true;
             }
@@ -89,34 +89,34 @@ public class BankCommand implements CommandExecutor, TabCompleter {
                 }
 
                 if (args[1].equalsIgnoreCase("all") || args[1].equalsIgnoreCase("alles")) {
-                    int bankCoins = plugin.getCoinManager().getBankCoins(player);
+                    double bankCoins = plugin.getCoinManager().getBankCoins(player);
                     if (bankCoins <= 0) {
                         player.sendMessage(ColorUtil.component("&cDu hast keine Coins in der Bank zum Abheben!"));
                         return true;
                     }
 
                     if (plugin.getCoinManager().withdrawCoins(player, bankCoins)) {
-                        player.sendMessage(ColorUtil.component("&7Du hast &aalle &6" + bankCoins + " Coins &7aus deiner Bank abgehoben!"));
+                        player.sendMessage(ColorUtil.component("&7Du hast &aalle &6" + String.format("%.2f", bankCoins) + " Coins &7aus deiner Bank abgehoben!"));
                         showBankInfo(player);
                     }
                     return true;
                 }
 
                 try {
-                    int amount = Integer.parseInt(args[1]);
+                    double amount = Double.parseDouble(args[1]);
                     if (amount <= 0) {
                         player.sendMessage(ColorUtil.component("&cDie Menge muss positiv sein!"));
                         return true;
                     }
 
                     if (plugin.getCoinManager().withdrawCoins(player, amount)) {
-                        player.sendMessage(ColorUtil.component("&7Du hast &6" + amount + " Coins &7aus deiner Bank abgehoben!"));
+                        player.sendMessage(ColorUtil.component("&7Du hast &6" + String.format("%.2f", amount) + " Coins &7aus deiner Bank abgehoben!"));
                         showBankInfo(player);
                     } else {
-                        player.sendMessage(ColorUtil.component("&cDu hast nicht genug Coins in der Bank! Du hast nur &6" + plugin.getCoinManager().getBankCoins(player) + " Coins &cin der Bank."));
+                        player.sendMessage(ColorUtil.component("&cDu hast nicht genug Coins in der Bank! Du hast nur &6" + String.format("%.2f", plugin.getCoinManager().getBankCoins(player)) + " Coins &cin der Bank."));
                     }
                 } catch (NumberFormatException e) {
-                    player.sendMessage(ColorUtil.component("&cUngültige Zahl! Verwende eine ganze Zahl oder 'all'."));
+                    player.sendMessage(ColorUtil.component("&cUngültige Zahl! Verwende eine Zahl oder 'all'."));
                 }
                 return true;
             }
@@ -139,44 +139,25 @@ public class BankCommand implements CommandExecutor, TabCompleter {
                 }
 
                 try {
-                    int amount = Integer.parseInt(args[2]);
+                    double amount = Double.parseDouble(args[2]);
                     if (amount <= 0) {
                         player.sendMessage(ColorUtil.component("&cDie Menge muss positiv sein!"));
                         return true;
                     }
 
-                    if (plugin.getCoinManager().removeCoins(player, amount)) {
-                        plugin.getCoinManager().addCoins(target, amount);
+                    if (plugin.getCoinManager().withdrawCoins(player, amount)) {
+                        plugin.getCoinManager().depositCoins(target, amount);
 
-                        player.sendMessage(ColorUtil.component("&7Du hast &6" + amount + " Coins &7an &a" + target.getName() + " &7überwiesen!"));
-                        target.sendMessage(ColorUtil.component("&7Du hast &6" + amount + " Coins &7von &a" + player.getName() + " &7erhalten!"));
+                        player.sendMessage(ColorUtil.component("&7Du hast &6" + String.format("%.2f", amount) + " Coins &7an &a" + target.getName() + " &7überwiesen!"));
+                        target.sendMessage(ColorUtil.component("&7Du hast &6" + String.format("%.2f", amount) + " Coins &7von &a" + player.getName() + " &7erhalten! (auf deine Bank)"));
 
                         showBankInfo(player);
                     } else {
-                        player.sendMessage(ColorUtil.component("&cDu hast nicht genug Coins! Du hast nur &6" + plugin.getCoinManager().getCoins(player) + " Coins&c."));
+                        player.sendMessage(ColorUtil.component("&cDu hast nicht genug Coins in der Bank! Du hast nur &6" + String.format("%.2f", plugin.getCoinManager().getBankCoins(player)) + " Coins &cin der Bank."));
                     }
                 } catch (NumberFormatException e) {
                     player.sendMessage(ColorUtil.component("&cUngültige Zahl!"));
                 }
-                return true;
-            }
-
-            case "state" -> {
-                if (!player.hasPermission("slownvectur.statebank.view")) {
-                    player.sendMessage(ColorUtil.component("&cDu hast keine Berechtigung für diesen Command!"));
-                    return true;
-                }
-
-                int stateBankBalance = plugin.getStateBankManager().getStateBankBalance();
-                double taxRate = plugin.getStateBankManager().getTaxRate() * 100;
-                int threshold = plugin.getStateBankManager().getRichPlayerThreshold();
-
-                player.sendMessage(ColorUtil.component("&6&l◆ Staatsbank Information ◆"));
-                player.sendMessage(ColorUtil.component("&7&m──────────────────────────"));
-                player.sendMessage(ColorUtil.component("&7🏛️ Staatsbank Guthaben: &6" + stateBankBalance + " Coins"));
-                player.sendMessage(ColorUtil.component("&7📊 Steuersatz: &6" + String.format("%.1f", taxRate) + "%"));
-                player.sendMessage(ColorUtil.component("&7💎 Reichtums-Schwelle: &6" + threshold + " Coins"));
-                player.sendMessage(ColorUtil.component("&7&m──────────────────────────"));
                 return true;
             }
 
@@ -204,9 +185,6 @@ public class BankCommand implements CommandExecutor, TabCompleter {
             String input = args[0].toLowerCase();
             for (String subCommand : subCommands) {
                 if (subCommand.startsWith(input)) {
-                    if (subCommand.equals("state") && !sender.hasPermission("slownvectur.statebank.view")) {
-                        continue;
-                    }
                     completions.add(subCommand);
                 }
             }
@@ -235,22 +213,15 @@ public class BankCommand implements CommandExecutor, TabCompleter {
     }
 
     private void showBankInfo(Player player) {
-        int coins = plugin.getCoinManager().getCoins(player);
-        int bankCoins = plugin.getCoinManager().getBankCoins(player);
-        int totalCoins = coins + bankCoins;
+        double coins = plugin.getCoinManager().getCoins(player);
+        double bankCoins = plugin.getCoinManager().getBankCoins(player);
+        double totalCoins = coins + bankCoins;
 
         player.sendMessage(ColorUtil.component("&6&l◆ Bank Information ◆"));
         player.sendMessage(ColorUtil.component("&7&m──────────────────────"));
         player.sendMessage(ColorUtil.component("&7💰 Geldbörse: &6" + formatCoins(coins)));
         player.sendMessage(ColorUtil.component("&7🏦 Bank: &6" + formatCoins(bankCoins)));
         player.sendMessage(ColorUtil.component("&7💎 Gesamt: &6" + formatCoins(totalCoins)));
-
-        int threshold = plugin.getStateBankManager().getRichPlayerThreshold();
-        if (totalCoins >= threshold) {
-            double taxRate = plugin.getStateBankManager().getTaxRate() * 100;
-            player.sendMessage(ColorUtil.component("&7⚠️ Steuerpflichtig: &c" + String.format("%.1f", taxRate) + "%"));
-        }
-
         player.sendMessage(ColorUtil.component("&7&m──────────────────────"));
         player.sendMessage(ColorUtil.component("&7Verwende &6/bank help &7für Commands"));
     }
@@ -262,18 +233,12 @@ public class BankCommand implements CommandExecutor, TabCompleter {
         player.sendMessage(ColorUtil.component("&6/bank deposit <menge> &7- Coins einzahlen"));
         player.sendMessage(ColorUtil.component("&6/bank withdraw <menge> &7- Coins abheben"));
         player.sendMessage(ColorUtil.component("&6/bank transfer <spieler> <menge> &7- Coins überweisen"));
-        if (player.hasPermission("slownvectur.statebank.view")) {
-            player.sendMessage(ColorUtil.component("&6/bank state &7- Staatsbank anzeigen"));
-        }
         player.sendMessage(ColorUtil.component("&7&m───────────────────────"));
         player.sendMessage(ColorUtil.component("&7💡 Tipp: Verwende &6'all' &7statt einer Zahl für alle Coins!"));
+        player.sendMessage(ColorUtil.component("&7💡 Transfers gehen auf die Bank des Empfängers!"));
     }
 
-    private String formatCoins(int coins) {
-        if (coins == 1) {
-            return coins + " Coin";
-        } else {
-            return coins + " Coins";
-        }
+    private String formatCoins(double coins) {
+        return String.format("%.2f", coins) + " Coins";
     }
 }

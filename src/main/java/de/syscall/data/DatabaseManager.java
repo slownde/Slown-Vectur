@@ -41,8 +41,8 @@ public class DatabaseManager {
                 first_join BIGINT NOT NULL,
                 last_join BIGINT NOT NULL,
                 play_time BIGINT DEFAULT 0,
-                coins INTEGER DEFAULT 0,
-                bank_coins INTEGER DEFAULT 0
+                coins REAL DEFAULT 0.0,
+                bank_coins REAL DEFAULT 0.0
             )
             """;
 
@@ -68,8 +68,8 @@ public class DatabaseManager {
                             rs.getLong("first_join"),
                             rs.getLong("last_join"),
                             rs.getLong("play_time"),
-                            rs.getInt("coins"),
-                            rs.getInt("bank_coins")
+                            rs.getDouble("coins"),
+                            rs.getDouble("bank_coins")
                     );
                 } else {
                     PlayerData data = new PlayerData(uuid, name);
@@ -88,10 +88,10 @@ public class DatabaseManager {
             @Override
             public void run() {
                 String sql = """
-                    INSERT OR REPLACE INTO players\s
-                    (uuid, name, first_join, last_join, play_time, coins, bank_coins)\s
+                    INSERT OR REPLACE INTO players
+                    (uuid, name, first_join, last_join, play_time, coins, bank_coins)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
-                   \s""";
+                   """;
 
                 try (PreparedStatement stmt = connection.prepareStatement(sql)) {
                     stmt.setString(1, data.getUuid().toString());
@@ -99,8 +99,8 @@ public class DatabaseManager {
                     stmt.setLong(3, data.getFirstJoin());
                     stmt.setLong(4, data.getLastJoin());
                     stmt.setLong(5, data.getPlayTime());
-                    stmt.setInt(6, data.getCoins());
-                    stmt.setInt(7, data.getBankCoins());
+                    stmt.setDouble(6, data.getCoins());
+                    stmt.setDouble(7, data.getBankCoins());
                     stmt.execute();
                 } catch (SQLException e) {
                     plugin.getLogger().severe("Fehler beim Speichern der Spielerdaten: " + e.getMessage());

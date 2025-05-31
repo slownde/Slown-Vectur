@@ -9,8 +9,8 @@ public class PlayerData {
     private long firstJoin;
     private long lastJoin;
     private long playTime;
-    private int coins;
-    private int bankCoins;
+    private double coins;
+    private double bankCoins;
     private boolean dataLoaded;
 
     public PlayerData(UUID uuid, String name) {
@@ -19,12 +19,12 @@ public class PlayerData {
         this.firstJoin = System.currentTimeMillis();
         this.lastJoin = System.currentTimeMillis();
         this.playTime = 0;
-        this.coins = 0;
-        this.bankCoins = 0;
+        this.coins = 0.0;
+        this.bankCoins = 0.0;
         this.dataLoaded = false;
     }
 
-    public PlayerData(UUID uuid, String name, long firstJoin, long lastJoin, long playTime, int coins, int bankCoins) {
+    public PlayerData(UUID uuid, String name, long firstJoin, long lastJoin, long playTime, double coins, double bankCoins) {
         this.uuid = uuid;
         this.name = name;
         this.firstJoin = firstJoin;
@@ -75,35 +75,35 @@ public class PlayerData {
         this.playTime += time;
     }
 
-    public int getCoins() {
+    public double getCoins() {
         return coins;
     }
 
-    public void setCoins(int coins) {
+    public void setCoins(double coins) {
         this.coins = coins;
     }
 
-    public void addCoins(int coins) {
+    public void addCoins(double coins) {
         this.coins += coins;
     }
 
-    public void removeCoins(int coins) {
+    public void removeCoins(double coins) {
         this.coins = Math.max(0, this.coins - coins);
     }
 
-    public int getBankCoins() {
+    public double getBankCoins() {
         return bankCoins;
     }
 
-    public void setBankCoins(int bankCoins) {
+    public void setBankCoins(double bankCoins) {
         this.bankCoins = bankCoins;
     }
 
-    public void addBankCoins(int coins) {
+    public void addBankCoins(double coins) {
         this.bankCoins += coins;
     }
 
-    public void removeBankCoins(int coins) {
+    public void removeBankCoins(double coins) {
         this.bankCoins = Math.max(0, this.bankCoins - coins);
     }
 

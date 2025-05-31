@@ -14,20 +14,20 @@ public class CoinManager {
         this.plugin = plugin;
     }
 
-    public int getCoins(Player player) {
+    public double getCoins(Player player) {
         return getCoins(player.getUniqueId());
     }
 
-    public int getCoins(UUID uuid) {
+    public double getCoins(UUID uuid) {
         PlayerData data = plugin.getPlayerDataManager().getPlayerData(uuid);
-        return data != null ? data.getCoins() : 0;
+        return data != null ? data.getCoins() : 0.0;
     }
 
-    public void setCoins(Player player, int amount) {
+    public void setCoins(Player player, double amount) {
         setCoins(player.getUniqueId(), amount);
     }
 
-    public void setCoins(UUID uuid, int amount) {
+    public void setCoins(UUID uuid, double amount) {
         PlayerData data = plugin.getPlayerDataManager().getPlayerData(uuid);
         if (data != null) {
             data.setCoins(Math.max(0, amount));
@@ -40,11 +40,11 @@ public class CoinManager {
         }
     }
 
-    public void addCoins(Player player, int amount) {
+    public void addCoins(Player player, double amount) {
         addCoins(player.getUniqueId(), amount);
     }
 
-    public void addCoins(UUID uuid, int amount) {
+    public void addCoins(UUID uuid, double amount) {
         if (amount <= 0) return;
 
         PlayerData data = plugin.getPlayerDataManager().getPlayerData(uuid);
@@ -59,11 +59,11 @@ public class CoinManager {
         }
     }
 
-    public boolean removeCoins(Player player, int amount) {
+    public boolean removeCoins(Player player, double amount) {
         return removeCoins(player.getUniqueId(), amount);
     }
 
-    public boolean removeCoins(UUID uuid, int amount) {
+    public boolean removeCoins(UUID uuid, double amount) {
         if (amount <= 0) return false;
 
         PlayerData data = plugin.getPlayerDataManager().getPlayerData(uuid);
@@ -80,28 +80,28 @@ public class CoinManager {
         return false;
     }
 
-    public boolean hasCoins(Player player, int amount) {
+    public boolean hasCoins(Player player, double amount) {
         return hasCoins(player.getUniqueId(), amount);
     }
 
-    public boolean hasCoins(UUID uuid, int amount) {
+    public boolean hasCoins(UUID uuid, double amount) {
         return getCoins(uuid) >= amount;
     }
 
-    public int getBankCoins(Player player) {
+    public double getBankCoins(Player player) {
         return getBankCoins(player.getUniqueId());
     }
 
-    public int getBankCoins(UUID uuid) {
+    public double getBankCoins(UUID uuid) {
         PlayerData data = plugin.getPlayerDataManager().getPlayerData(uuid);
-        return data != null ? data.getBankCoins() : 0;
+        return data != null ? data.getBankCoins() : 0.0;
     }
 
-    public boolean depositCoins(Player player, int amount) {
+    public boolean depositCoins(Player player, double amount) {
         return depositCoins(player.getUniqueId(), amount);
     }
 
-    public boolean depositCoins(UUID uuid, int amount) {
+    public boolean depositCoins(UUID uuid, double amount) {
         if (amount <= 0) return false;
 
         PlayerData data = plugin.getPlayerDataManager().getPlayerData(uuid);
@@ -119,11 +119,11 @@ public class CoinManager {
         return false;
     }
 
-    public boolean withdrawCoins(Player player, int amount) {
+    public boolean withdrawCoins(Player player, double amount) {
         return withdrawCoins(player.getUniqueId(), amount);
     }
 
-    public boolean withdrawCoins(UUID uuid, int amount) {
+    public boolean withdrawCoins(UUID uuid, double amount) {
         if (amount <= 0) return false;
 
         PlayerData data = plugin.getPlayerDataManager().getPlayerData(uuid);
@@ -141,11 +141,11 @@ public class CoinManager {
         return false;
     }
 
-    public boolean hasBankCoins(Player player, int amount) {
+    public boolean hasBankCoins(Player player, double amount) {
         return hasBankCoins(player.getUniqueId(), amount);
     }
 
-    public boolean hasBankCoins(UUID uuid, int amount) {
+    public boolean hasBankCoins(UUID uuid, double amount) {
         return getBankCoins(uuid) >= amount;
     }
 }

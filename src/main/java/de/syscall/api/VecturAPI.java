@@ -1,6 +1,7 @@
 package de.syscall.api;
 
 import de.syscall.SlownVectur;
+import de.syscall.data.DatabaseManager;
 import de.syscall.data.PlayerData;
 import de.syscall.manager.*;
 import org.bukkit.entity.Player;
@@ -45,36 +46,40 @@ public class VecturAPI {
         return plugin.getPrefixManager().getWeight(player);
     }
 
-    public int getCoins(Player player) {
+    public double getCoins(Player player) {
         return plugin.getCoinManager().getCoins(player);
     }
 
-    public int getBankCoins(Player player) {
+    public double getBankCoins(Player player) {
         return plugin.getCoinManager().getBankCoins(player);
     }
 
-    public void addCoins(Player player, int amount) {
+    public void addCoins(Player player, double amount) {
         plugin.getCoinManager().addCoins(player, amount);
     }
 
-    public boolean removeCoins(Player player, int amount) {
+    public boolean removeCoins(Player player, double amount) {
         return plugin.getCoinManager().removeCoins(player, amount);
     }
 
-    public void setCoins(Player player, int amount) {
+    public void setCoins(Player player, double amount) {
         plugin.getCoinManager().setCoins(player, amount);
     }
 
-    public boolean hasCoins(Player player, int amount) {
+    public boolean hasCoins(Player player, double amount) {
         return plugin.getCoinManager().hasCoins(player, amount);
     }
 
-    public boolean depositCoins(Player player, int amount) {
+    public boolean depositCoins(Player player, double amount) {
         return plugin.getCoinManager().depositCoins(player, amount);
     }
 
-    public boolean withdrawCoins(Player player, int amount) {
+    public boolean withdrawCoins(Player player, double amount) {
         return plugin.getCoinManager().withdrawCoins(player, amount);
+    }
+
+    public boolean hasBankCoins(Player player, double amount) {
+        return plugin.getCoinManager().hasBankCoins(player, amount);
     }
 
     public long getPlayTime(Player player) {
@@ -106,5 +111,13 @@ public class VecturAPI {
 
     public PlayerDataManager getPlayerDataManager() {
         return plugin.getPlayerDataManager();
+    }
+
+    public ScoreboardManager getScoreboardManager() {
+        return plugin.getScoreboardManager();
+    }
+
+    public DatabaseManager getDatabaseManager() {
+        return plugin.getDatabaseManager();
     }
 }

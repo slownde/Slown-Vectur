@@ -31,7 +31,7 @@ public class CoinsCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
 
-            int coins = plugin.getCoinManager().getCoins(player);
+            double coins = plugin.getCoinManager().getCoins(player);
             player.sendMessage(ColorUtil.component("&7Du hast &6" + coins + " Coins&7!"));
             return true;
         }
@@ -48,7 +48,7 @@ public class CoinsCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
 
-                int coins = plugin.getCoinManager().getCoins(target);
+                double coins = plugin.getCoinManager().getCoins(target);
                 if (sender.equals(target)) {
                     sender.sendMessage(ColorUtil.component("&7Du hast &6" + coins + " Coins&7!"));
                 } else {

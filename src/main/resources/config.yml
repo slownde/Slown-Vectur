@@ -43,45 +43,11 @@ labymod:
   watermark:
     enabled: true
 
-# StateBank Configuration
-statebank:
-  balance: 0
-  tax-rate: 0.05  # 5% Steuersatz für reiche Spieler
-  rich-threshold: 10000  # Ab 10.000 Coins werden Steuern fällig
-
-# Shop System Configuration
-shop:
-  default-tax-rate: 0.03  # 3% Steuern auf alle Shop-Verkäufe
-  hologram:
-    item-height: 1       # Höhe des Items über der Kiste
-    price-height: 0.5      # Höhe des Preis-Texts über der Kiste
-    owner-height: 0.8      # Höhe des Besitzer-Texts über der Kiste
-    rotation-speed: 1.5    # Rotationsgeschwindigkeit des Items (Grad pro Update)
-    rotation-interval: 2   # Ticks zwischen Rotations-Updates
-    view-distance: 100     # Sichtweite der Holograms (Blöcke)
-  protection:
-    explosion-protection: true     # Schutz vor Explosionen
-    admin-bypass: true            # Admins können alle Shops zerstören
-    owner-shift-destroy: true     # Besitzer müssen Shift halten zum Zerstören
-    prevent-hopper: true          # Verhindert Hopper-Zugriff auf Shop-Kisten
-    prevent-redstone: true        # Verhindert Redstone-Interaktion mit Shops
-  display:
-    show-item-amount: true        # Zeigt nur 1 Item im Hologram (nicht die Verkaufsmenge)
-    price-format: "§6{amount}x §7für §a{price} {currency}"
-    owner-format: "§7Shop von §6{owner}"
-    currency-symbol: "Coins"
-    decimal-places: 2             # Nachkommastellen für Preise
-
 # Performance Settings
 performance:
   save-interval: 300              # Sekunden zwischen automatischen Speicherungen
   cleanup-interval: 600           # Sekunden zwischen Cache-Bereinigungen
-  hologram-tick-rate: 2           # Ticks zwischen Hologram-Updates
-  database-batch-size: 50         # Anzahl Operationen pro Datenbank-Batch
 
 # Debug Settings
 debug:
   enabled: false                  # Debug-Modus aktivieren
-  log-packets: false             # Packet-Sending loggen
-  log-shop-interactions: false   # Shop-Interaktionen loggen
-  log-hologram-updates: false    # Hologram-Updates loggen
