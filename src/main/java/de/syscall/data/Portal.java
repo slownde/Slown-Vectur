@@ -2,84 +2,57 @@ package de.syscall.data;
 
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.util.BoundingBox;
 
 import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 public class Portal {
 
     private final String name;
-    private Location corner1;
-    private Location corner2;
+    private BoundingBox bounds;
     private Location teleportLocation;
     private String permission;
     private ActionType actionType;
     private String actionValue;
-    private Particle frameParticle;
-    private Particle innerParticle;
+    private Particle particle;
     private boolean enabled;
     private Set<DayOfWeek> allowedDays;
     private LocalTime startTime;
     private LocalTime endTime;
-    private int particleSpeed;
-    private int particleCount;
     private double particleSpacing;
+    private int particleDensity;
 
     public Portal(String name) {
         this.name = name;
         this.enabled = true;
-        this.frameParticle = Particle.PORTAL;
-        this.innerParticle = Particle.ENCHANT;
+        this.particle = Particle.PORTAL;
         this.actionType = ActionType.TELEPORT;
-        this.particleSpeed = 1;
-        this.particleCount = 5;
         this.particleSpacing = 0.5;
-    }
-
-    public Portal(String name, Location corner1, Location corner2, Location teleportLocation,
-                  String permission, ActionType actionType, String actionValue,
-                  Particle frameParticle, Particle innerParticle, boolean enabled,
-                  Set<DayOfWeek> allowedDays, LocalTime startTime, LocalTime endTime,
-                  int particleSpeed, int particleCount, double particleSpacing) {
-        this.name = name;
-        this.corner1 = corner1;
-        this.corner2 = corner2;
-        this.teleportLocation = teleportLocation;
-        this.permission = permission;
-        this.actionType = actionType;
-        this.actionValue = actionValue;
-        this.frameParticle = frameParticle;
-        this.innerParticle = innerParticle;
-        this.enabled = enabled;
-        this.allowedDays = allowedDays;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.particleSpeed = particleSpeed;
-        this.particleCount = particleCount;
-        this.particleSpacing = particleSpacing;
+        this.particleDensity = 1;
     }
 
     public String getName() {
         return name;
     }
 
-    public Location getCorner1() {
-        return corner1;
+    public BoundingBox getBounds() {
+        return bounds;
     }
 
-    public void setCorner1(Location corner1) {
-        this.corner1 = corner1;
-    }
+    public void setBounds(Location corner1, Location corner2) {
+        if (corner1 != null && corner2 != null && corner1.getWorld().equals(corner2.getWorld())) {
+            double minX = Math.min(corner1.getX(), corner2.getX());
+            double maxX = Math.max(corner1.getX(), corner2.getX());
+            double minY = Math.min(corner1.getY(), corner2.getY());
+            double maxY = Math.max(corner1.getY(), corner2.getY());
+            double minZ = Math.min(corner1.getZ(), corner2.getZ());
+            double maxZ = Math.max(corner1.getZ(), corner2.getZ());
 
-    public Location getCorner2() {
-        return corner2;
-    }
-
-    public void setCorner2(Location corner2) {
-        this.corner2 = corner2;
+            this.bounds = new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
+        }
     }
 
     public Location getTeleportLocation() {
@@ -114,20 +87,12 @@ public class Portal {
         this.actionValue = actionValue;
     }
 
-    public Particle getFrameParticle() {
-        return frameParticle;
+    public Particle getParticle() {
+        return particle;
     }
 
-    public void setFrameParticle(Particle frameParticle) {
-        this.frameParticle = frameParticle;
-    }
-
-    public Particle getInnerParticle() {
-        return innerParticle;
-    }
-
-    public void setInnerParticle(Particle innerParticle) {
-        this.innerParticle = innerParticle;
+    public void setParticle(Particle particle) {
+        this.particle = particle;
     }
 
     public boolean isEnabled() {
@@ -162,60 +127,36 @@ public class Portal {
         this.endTime = endTime;
     }
 
-    public int getParticleSpeed() {
-        return particleSpeed;
-    }
-
-    public void setParticleSpeed(int particleSpeed) {
-        this.particleSpeed = particleSpeed;
-    }
-
-    public int getParticleCount() {
-        return particleCount;
-    }
-
-    public void setParticleCount(int particleCount) {
-        this.particleCount = particleCount;
-    }
-
     public double getParticleSpacing() {
         return particleSpacing;
     }
 
     public void setParticleSpacing(double particleSpacing) {
-        this.particleSpacing = particleSpacing;
+        this.particleSpacing = Math.max(0.1, particleSpacing);
     }
 
-    public boolean isInPortal(Location location) {
-        if (corner1 == null || corner2 == null || location.getWorld() != corner1.getWorld()) {
-            return false;
-        }
+    public int getParticleDensity() {
+        return particleDensity;
+    }
 
-        double minX = Math.min(corner1.getX(), corner2.getX());
-        double maxX = Math.max(corner1.getX(), corner2.getX());
-        double minY = Math.min(corner1.getY(), corner2.getY());
-        double maxY = Math.max(corner1.getY(), corner2.getY());
-        double minZ = Math.min(corner1.getZ(), corner2.getZ());
-        double maxZ = Math.max(corner1.getZ(), corner2.getZ());
+    public void setParticleDensity(int particleDensity) {
+        this.particleDensity = Math.max(1, particleDensity);
+    }
 
-        return location.getX() >= minX && location.getX() <= maxX &&
-                location.getY() >= minY && location.getY() <= maxY &&
-                location.getZ() >= minZ && location.getZ() <= maxZ;
+    public boolean contains(Location location) {
+        return bounds != null && location.getWorld() != null &&
+                bounds.contains(location.getX(), location.getY(), location.getZ());
     }
 
     public boolean isTimeAllowed() {
-        if (allowedDays == null && startTime == null && endTime == null) {
-            return true;
-        }
-
-        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
 
         if (allowedDays != null && !allowedDays.contains(now.getDayOfWeek())) {
             return false;
         }
 
         if (startTime != null && endTime != null) {
-            java.time.LocalTime currentTime = now.toLocalTime();
+            LocalTime currentTime = now.toLocalTime();
             if (startTime.isBefore(endTime)) {
                 return !currentTime.isBefore(startTime) && !currentTime.isAfter(endTime);
             } else {

@@ -68,7 +68,6 @@ public class SlownVectur extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerQuitListener(this), this);
         getServer().getPluginManager().registerEvents(new AsyncPlayerChatListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerRankChangeListener(this), this);
-        getServer().getPluginManager().registerEvents(new PortalListener(this), this);
     }
 
     private void registerCommands() {
