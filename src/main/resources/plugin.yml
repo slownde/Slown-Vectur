@@ -6,7 +6,7 @@ authors: [80x0]
 description: Das Herz des Slown Networks
 website: https://slown.de
 softdepend: [LuckPerms, PlaceholderAPI]
-depend: [LabyModServerAPI]
+depend: [LabyModServerAPI, ProtocolLib]
 
 permissions:
   slownvectur.*:

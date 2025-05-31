@@ -1,48 +1,60 @@
 package de.syscall.manager;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.comphenix.protocol.wrappers.WrappedDataValue;
+import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import de.syscall.SlownVectur;
 import de.syscall.data.Shop;
-import de.syscall.util.ColorUtil;
-import net.minecraft.network.chat.IChatBaseComponent;
-import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
-import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
-import net.minecraft.network.protocol.game.PacketPlayOutEntityMetadata;
-import net.minecraft.network.syncher.DataWatcher;
-import net.minecraft.server.level.EntityPlayer;
-import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.decoration.EntityArmorStand;
-import net.minecraft.world.entity.item.EntityItem;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_21_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_21_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_21_R3.inventory.CraftItemStack;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.craftbukkit.v1_21_R3.inventory.CraftItemStack;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class HologramManager {
 
     private final SlownVectur plugin;
+    private final ProtocolManager protocolManager;
     private final Map<String, Set<Integer>> shopHolograms;
     private final Map<String, Set<Integer>> shopItems;
     private final Map<Integer, Float> itemRotations;
     private int nextEntityId;
 
+    private double itemHeight;
+    private double priceHeight;
+    private double ownerHeight;
+    private float rotationSpeed;
+    private int rotationInterval;
+    private int viewDistanceSquared;
+
     public HologramManager(SlownVectur plugin) {
         this.plugin = plugin;
+        this.protocolManager = ProtocolLibrary.getProtocolManager();
         this.shopHolograms = new ConcurrentHashMap<>();
         this.shopItems = new ConcurrentHashMap<>();
         this.itemRotations = new ConcurrentHashMap<>();
         this.nextEntityId = 100000;
+        loadConfig();
         startRotationTask();
+    }
+
+    private void loadConfig() {
+        plugin.reloadConfig();
+        this.itemHeight = plugin.getConfig().getDouble("shop.hologram.item-height", 1.3);
+        this.priceHeight = plugin.getConfig().getDouble("shop.hologram.price-height", 0.5);
+        this.ownerHeight = plugin.getConfig().getDouble("shop.hologram.owner-height", 0.8);
+        this.rotationSpeed = (float) plugin.getConfig().getDouble("shop.hologram.rotation-speed", 1.5);
+        this.rotationInterval = plugin.getConfig().getInt("shop.hologram.rotation-interval", 2);
+        int viewDistance = plugin.getConfig().getInt("shop.hologram.view-distance", 100);
+        this.viewDistanceSquared = viewDistance * viewDistance;
     }
 
     private void startRotationTask() {
@@ -51,17 +63,21 @@ public class HologramManager {
             public void run() {
                 updateItemRotations();
             }
-        }.runTaskTimer(plugin, 0L, 2L);
+        }.runTaskTimer(plugin, 0L, rotationInterval);
     }
 
     private void updateItemRotations() {
         for (Map.Entry<Integer, Float> entry : itemRotations.entrySet()) {
             int entityId = entry.getKey();
-            float newRotation = entry.getValue() + 3.0f;
+            float newRotation = entry.getValue() + rotationSpeed;
             if (newRotation >= 360.0f) {
                 newRotation = 0.0f;
             }
             itemRotations.put(entityId, newRotation);
+
+            for (Player player : plugin.getServer().getOnlinePlayers()) {
+                sendRotationUpdate(player, entityId, newRotation);
+            }
         }
     }
 
@@ -85,112 +101,112 @@ public class HologramManager {
         itemRotations.put(itemEntityId, 0.0f);
 
         for (Player player : plugin.getServer().getOnlinePlayers()) {
-            if (player.getLocation().distanceSquared(loc) < 10000) {
+            if (player.getLocation().distanceSquared(loc) < viewDistanceSquared) {
                 sendHologramPackets(player, shop, priceHologramId, amountHologramId, itemEntityId);
             }
         }
     }
 
     private void sendHologramPackets(Player player, Shop shop, int priceId, int amountId, int itemId) {
-        Location loc = shop.getHologramLocation();
-        EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
+        Location chestLoc = shop.getChestLocation();
+        Location centerLoc = chestLoc.clone().add(0.5, 0, 0.5);
 
-        sendArmorStandPacket(entityPlayer, priceId, loc.clone().add(0, 0.3, 0),
-                "§6" + shop.getAmount() + "x §7für §a" + String.format("%.2f", shop.getTotalPrice()) + " Coins");
+        String priceFormat = plugin.getConfig().getString("shop.display.price-format", "§6{amount}x §7für §a{price} Coins");
+        String ownerFormat = plugin.getConfig().getString("shop.display.owner-format", "§7Shop von §6{owner}");
+        String currency = plugin.getConfig().getString("shop.display.currency-symbol", "Coins");
+        int decimalPlaces = plugin.getConfig().getInt("shop.display.decimal-places", 2);
 
-        sendArmorStandPacket(entityPlayer, amountId, loc.clone().add(0, 0.6, 0),
-                "§7Shop von §6" + plugin.getServer().getOfflinePlayer(shop.getOwner()).getName());
+        String priceText = priceFormat
+                .replace("{amount}", String.valueOf(shop.getAmount()))
+                .replace("{price}", String.format("%." + decimalPlaces + "f", shop.getTotalPrice()))
+                .replace("{currency}", currency);
 
-        sendItemEntityPacket(entityPlayer, itemId, loc.clone().add(0, 1.2, 0), shop.getItem());
+        String shopText = ownerFormat
+                .replace("{owner}", plugin.getServer().getOfflinePlayer(shop.getOwner()).getName());
+
+        sendTextHologram(player, priceId, centerLoc.clone().add(0, priceHeight, 0), priceText);
+        sendTextHologram(player, amountId, centerLoc.clone().add(0, ownerHeight, 0), shopText);
+        sendItemHologram(player, itemId, centerLoc.clone().add(0, itemHeight, 0), shop.getItem());
     }
 
-    private void sendArmorStandPacket(EntityPlayer player, int entityId, Location location, String text) {
+    private void sendTextHologram(Player player, int entityId, Location location, String text) {
         try {
-            EntityArmorStand armorStand = new EntityArmorStand(EntityTypes.f, ((CraftWorld) location.getWorld()).getHandle());
-            armorStand.a_(location.getX(), location.getY(), location.getZ());
+            PacketContainer spawnPacket = protocolManager.createPacket(PacketType.Play.Server.SPAWN_ENTITY);
+            spawnPacket.getIntegers().write(0, entityId);
+            spawnPacket.getUUIDs().write(0, UUID.randomUUID());
+            spawnPacket.getEntityTypeModifier().write(0, EntityType.ARMOR_STAND);
+            spawnPacket.getDoubles().write(0, location.getX());
+            spawnPacket.getDoubles().write(1, location.getY());
+            spawnPacket.getDoubles().write(2, location.getZ());
 
-            setEntityId(armorStand, entityId);
-            armorStand.k(true);
-            armorStand.b(IChatBaseComponent.a(text));
-            armorStand.n(true);
-            armorStand.v(true);
+            protocolManager.sendServerPacket(player, spawnPacket);
 
-            PacketPlayOutSpawnEntity spawnPacket = createSpawnPacket(armorStand);
-            PacketPlayOutEntityMetadata metadataPacket = createMetadataPacket(entityId, armorStand);
+            PacketContainer metadataPacket = protocolManager.createPacket(PacketType.Play.Server.ENTITY_METADATA);
+            metadataPacket.getIntegers().write(0, entityId);
 
-            player.f.b(spawnPacket);
-            player.f.b(metadataPacket);
+            List<WrappedDataValue> dataValues = new ArrayList<>();
+
+            dataValues.add(new WrappedDataValue(0, WrappedDataWatcher.Registry.get(Byte.class), (byte) 0x20));
+            dataValues.add(new WrappedDataValue(2, WrappedDataWatcher.Registry.getChatComponentSerializer(true),
+                    Optional.of(WrappedChatComponent.fromText(text).getHandle())));
+            dataValues.add(new WrappedDataValue(3, WrappedDataWatcher.Registry.get(Boolean.class), true));
+            dataValues.add(new WrappedDataValue(5, WrappedDataWatcher.Registry.get(Boolean.class), true));
+            dataValues.add(new WrappedDataValue(15, WrappedDataWatcher.Registry.get(Byte.class), (byte) 0x01));
+
+            metadataPacket.getDataValueCollectionModifier().write(0, dataValues);
+
+            protocolManager.sendServerPacket(player, metadataPacket);
+
         } catch (Exception e) {
-            plugin.getLogger().warning("Failed to send hologram packet: " + e.getMessage());
+            plugin.getLogger().warning("Failed to send text hologram: " + e.getMessage());
         }
     }
 
-    private void sendItemEntityPacket(EntityPlayer player, int entityId, Location location, org.bukkit.inventory.ItemStack item) {
+    private void sendItemHologram(Player player, int entityId, Location location, ItemStack item) {
         try {
-            EntityItem entityItem = new EntityItem(EntityTypes.T, ((CraftWorld) location.getWorld()).getHandle());
-            entityItem.a_(location.getX(), location.getY(), location.getZ());
-            entityItem.e(CraftItemStack.asNMSCopy(item));
+            PacketContainer spawnPacket = protocolManager.createPacket(PacketType.Play.Server.SPAWN_ENTITY);
+            spawnPacket.getIntegers().write(0, entityId);
+            spawnPacket.getUUIDs().write(0, UUID.randomUUID());
+            spawnPacket.getEntityTypeModifier().write(0, EntityType.ITEM);
+            spawnPacket.getDoubles().write(0, location.getX());
+            spawnPacket.getDoubles().write(1, location.getY());
+            spawnPacket.getDoubles().write(2, location.getZ());
 
-            setEntityId(entityItem, entityId);
-            setNoPickup(entityItem);
+            protocolManager.sendServerPacket(player, spawnPacket);
 
-            PacketPlayOutSpawnEntity spawnPacket = createSpawnPacket(entityItem);
-            PacketPlayOutEntityMetadata metadataPacket = createMetadataPacket(entityId, entityItem);
+            PacketContainer metadataPacket = protocolManager.createPacket(PacketType.Play.Server.ENTITY_METADATA);
+            metadataPacket.getIntegers().write(0, entityId);
 
-            player.f.b(spawnPacket);
-            player.f.b(metadataPacket);
+            List<WrappedDataValue> dataValues = new ArrayList<>();
+
+            ItemStack singleItem = item.clone();
+            singleItem.setAmount(1);
+            net.minecraft.world.item.ItemStack nmsItem = CraftItemStack.asNMSCopy(singleItem);
+
+            dataValues.add(new WrappedDataValue(0, WrappedDataWatcher.Registry.get(Byte.class), (byte) 0x20));
+            dataValues.add(new WrappedDataValue(5, WrappedDataWatcher.Registry.get(Boolean.class), true));
+            dataValues.add(new WrappedDataValue(8, WrappedDataWatcher.Registry.getItemStackSerializer(false), nmsItem));
+
+            metadataPacket.getDataValueCollectionModifier().write(0, dataValues);
+
+            protocolManager.sendServerPacket(player, metadataPacket);
+
         } catch (Exception e) {
-            plugin.getLogger().warning("Failed to send item entity packet: " + e.getMessage());
+            plugin.getLogger().warning("Failed to send item hologram: " + e.getMessage());
         }
     }
 
-    private void setEntityId(net.minecraft.world.entity.Entity entity, int id) {
+    private void sendRotationUpdate(Player player, int entityId, float yaw) {
         try {
-            Field idField = net.minecraft.world.entity.Entity.class.getDeclaredField("ap");
-            idField.setAccessible(true);
-            idField.setInt(entity, id);
+            PacketContainer rotationPacket = protocolManager.createPacket(PacketType.Play.Server.ENTITY_LOOK);
+            rotationPacket.getIntegers().write(0, entityId);
+            rotationPacket.getBytes().write(0, (byte) (yaw * 256.0F / 360.0F));
+            rotationPacket.getBytes().write(1, (byte) 0);
+            rotationPacket.getBooleans().write(0, false);
+
+            protocolManager.sendServerPacket(player, rotationPacket);
         } catch (Exception e) {
-            plugin.getLogger().warning("Failed to set entity ID: " + e.getMessage());
-        }
-    }
-
-    private void setNoPickup(EntityItem entityItem) {
-        try {
-            Method setNeverPickUp = EntityItem.class.getDeclaredMethod("z", boolean.class);
-            setNeverPickUp.setAccessible(true);
-            setNeverPickUp.invoke(entityItem, true);
-        } catch (Exception e) {
-            plugin.getLogger().warning("Failed to set no pickup: " + e.getMessage());
-        }
-    }
-
-    private PacketPlayOutSpawnEntity createSpawnPacket(net.minecraft.world.entity.Entity entity) {
-        try {
-            Constructor<PacketPlayOutSpawnEntity> constructor = PacketPlayOutSpawnEntity.class.getDeclaredConstructor(net.minecraft.world.entity.Entity.class);
-            constructor.setAccessible(true);
-            return constructor.newInstance(entity);
-        } catch (Exception e) {
-            plugin.getLogger().warning("Failed to create spawn packet: " + e.getMessage());
-            return null;
-        }
-    }
-
-    private PacketPlayOutEntityMetadata createMetadataPacket(int entityId, net.minecraft.world.entity.Entity entity) {
-        try {
-            Method getEntityData = net.minecraft.world.entity.Entity.class.getDeclaredMethod("ai");
-            getEntityData.setAccessible(true);
-            DataWatcher dataWatcher = (DataWatcher) getEntityData.invoke(entity);
-
-            Method packDirty = DataWatcher.class.getDeclaredMethod("i");
-            packDirty.setAccessible(true);
-            Object packedData = packDirty.invoke(dataWatcher);
-
-            Constructor<PacketPlayOutEntityMetadata> constructor = PacketPlayOutEntityMetadata.class.getDeclaredConstructor(int.class, packedData.getClass());
-            constructor.setAccessible(true);
-            return constructor.newInstance(entityId, packedData);
-        } catch (Exception e) {
-            plugin.getLogger().warning("Failed to create metadata packet: " + e.getMessage());
-            return null;
+            plugin.getLogger().warning("Failed to send rotation update: " + e.getMessage());
         }
     }
 
@@ -215,9 +231,9 @@ public class HologramManager {
     private void removeEntityForAllPlayers(int entityId) {
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             try {
-                EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
-                PacketPlayOutEntityDestroy destroyPacket = new PacketPlayOutEntityDestroy(entityId);
-                entityPlayer.f.b(destroyPacket);
+                PacketContainer destroyPacket = protocolManager.createPacket(PacketType.Play.Server.ENTITY_DESTROY);
+                destroyPacket.getIntLists().write(0, List.of(entityId));
+                protocolManager.sendServerPacket(player, destroyPacket);
             } catch (Exception e) {
                 plugin.getLogger().warning("Failed to remove entity: " + e.getMessage());
             }
@@ -226,13 +242,13 @@ public class HologramManager {
 
     public void updatePlayerHolograms(Player player) {
         for (Shop shop : plugin.getShopManager().getAllShops()) {
-            if (player.getLocation().distanceSquared(shop.getHologramLocation()) < 10000) {
+            if (player.getLocation().distanceSquared(shop.getHologramLocation()) < viewDistanceSquared) {
                 String shopId = shop.getUniqueId();
                 Set<Integer> hologramIds = shopHolograms.get(shopId);
                 Set<Integer> itemIds = shopItems.get(shopId);
 
                 if (hologramIds != null && itemIds != null &&
-                        hologramIds.size() >= 2 && itemIds.size() >= 1) {
+                        hologramIds.size() >= 2 && !itemIds.isEmpty()) {
 
                     Integer[] hIds = hologramIds.toArray(new Integer[0]);
                     Integer[] iIds = itemIds.toArray(new Integer[0]);
@@ -241,6 +257,10 @@ public class HologramManager {
                 }
             }
         }
+    }
+
+    public void reload() {
+        loadConfig();
     }
 
     public void cleanup() {

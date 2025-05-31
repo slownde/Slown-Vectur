@@ -1,4 +1,4 @@
-﻿package de.syscall.manager;
+package de.syscall.manager;
 
 import de.syscall.SlownVectur;
 import de.syscall.data.Shop;

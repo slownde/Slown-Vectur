@@ -1,4 +1,4 @@
-﻿package de.syscall.listener;
+package de.syscall.listener;
 
 import de.syscall.SlownVectur;
 import org.bukkit.entity.Player;

@@ -1,4 +1,4 @@
-﻿package de.syscall.command;
+package de.syscall.command;
 
 import de.syscall.SlownVectur;
 import de.syscall.util.ColorUtil;

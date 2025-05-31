@@ -11,7 +11,6 @@ public class Shop {
     private final String name;
     private final UUID owner;
     private final Location chestLocation;
-    private final Location hologramLocation;
     private final ItemStack item;
     private final int amount;
     private final double price;
@@ -21,8 +20,7 @@ public class Shop {
     public Shop(String name, UUID owner, Location chestLocation, ItemStack item, int amount, double price, double taxRate) {
         this.name = name;
         this.owner = owner;
-        this.chestLocation = chestLocation;
-        this.hologramLocation = chestLocation.clone().add(0.5, 2.0, 0.5);
+        this.chestLocation = chestLocation.clone();
         this.item = item.clone();
         this.amount = amount;
         this.price = price;
@@ -39,11 +37,11 @@ public class Shop {
     }
 
     public Location getChestLocation() {
-        return chestLocation;
+        return chestLocation.clone();
     }
 
     public Location getHologramLocation() {
-        return hologramLocation;
+        return chestLocation.clone().add(0.5, 1.3, 0.5);
     }
 
     public ItemStack getItem() {
