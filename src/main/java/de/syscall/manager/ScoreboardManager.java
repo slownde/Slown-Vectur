@@ -6,7 +6,6 @@ import de.syscall.util.ColorUtil;
 import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.entity.Player;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ScoreboardManager {

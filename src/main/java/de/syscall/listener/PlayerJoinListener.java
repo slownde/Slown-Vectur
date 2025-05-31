@@ -25,7 +25,7 @@ public class PlayerJoinListener implements Listener {
         Player player = event.getPlayer();
 
         event.joinMessage(plugin.getChatManager().getJoinMessage(player));
-        
+
         showLoadingAnimation(player);
 
         plugin.getPlayerDataManager().loadPlayerData(player).thenRun(() -> {
@@ -64,19 +64,20 @@ public class PlayerJoinListener implements Listener {
                 dots = (dots + 1) % 4;
                 String dotString = ".".repeat(dots);
 
-                String titleText = "§6Daten werden geladen" + dotString;
-                String subtitleText = "§7Fortschritt: §a" + progress + "%";
+                Component titleComponent;
+                Component subtitleComponent;
 
                 if (player.hasPlayedBefore()) {
-                    titleText = "§6Daten werden geladen" + dotString;
+                    titleComponent = Component.text("§6Daten werden geladen" + dotString);
+                    subtitleComponent = Component.text("§7Fortschritt: §a" + progress + "%");
                 } else {
-                    titleText = "§6Daten werden erstellt" + dotString;
-                    subtitleText = "§7Willkommen auf §6Slown Network§7!";
+                    titleComponent = Component.text("§6Daten werden erstellt" + dotString);
+                    subtitleComponent = Component.text("§7Willkommen auf §6Slown Network§7!");
                 }
 
                 Title title = Title.title(
-                        Component.text(titleText),
-                        Component.text(subtitleText),
+                        titleComponent,
+                        subtitleComponent,
                         Title.Times.times(Duration.ZERO, Duration.ofSeconds(1), Duration.ZERO)
                 );
 

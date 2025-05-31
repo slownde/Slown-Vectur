@@ -50,30 +50,30 @@ public class PortalListener implements Listener {
 
     private void handlePortalEnter(Player player, Portal portal) {
         if (!portal.isEnabled()) {
-            player.sendMessage(ColorUtil.colorize("&cDieses Portal ist deaktiviert!"));
+            player.sendMessage(ColorUtil.component("&cDieses Portal ist deaktiviert!"));
             return;
         }
 
         if (!portal.isTimeAllowed()) {
-            player.sendMessage(ColorUtil.colorize("&cDieses Portal ist zur Zeit nicht verfügbar!"));
+            player.sendMessage(ColorUtil.component("&cDieses Portal ist zur Zeit nicht verfügbar!"));
             if (portal.getStartTime() != null && portal.getEndTime() != null) {
-                player.sendMessage(ColorUtil.colorize("&7Verfügbar: &6" + portal.getStartTime() + " - " + portal.getEndTime()));
+                player.sendMessage(ColorUtil.component("&7Verfügbar: &6" + portal.getStartTime() + " - " + portal.getEndTime()));
             }
             if (portal.getAllowedDays() != null) {
-                player.sendMessage(ColorUtil.colorize("&7Tage: &6" + portal.getAllowedDays().toString()));
+                player.sendMessage(ColorUtil.component("&7Tage: &6" + portal.getAllowedDays().toString()));
             }
             return;
         }
 
         if (portal.getPermission() != null && !player.hasPermission(portal.getPermission())) {
-            player.sendMessage(ColorUtil.colorize("&cDu hast keine Berechtigung für dieses Portal!"));
+            player.sendMessage(ColorUtil.component("&cDu hast keine Berechtigung für dieses Portal!"));
             return;
         }
 
-        player.sendMessage(ColorUtil.colorize("&7Du betrittst das Portal &6" + portal.getName() + "&7..."));
+        player.sendMessage(ColorUtil.component("&7Du betrittst das Portal &6" + portal.getName() + "&7..."));
     }
 
     private void handlePortalLeave(Player player, String portalName) {
-        player.sendMessage(ColorUtil.colorize("&7Du verlässt das Portal &6" + portalName + "&7."));
+        player.sendMessage(ColorUtil.component("&7Du verlässt das Portal &6" + portalName + "&7."));
     }
 }

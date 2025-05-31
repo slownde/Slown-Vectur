@@ -2,7 +2,6 @@ package de.syscall.manager;
 
 import de.syscall.SlownVectur;
 import de.syscall.util.ColorUtil;
-import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
@@ -53,7 +52,7 @@ public class TablistManager {
         }
 
         if (!prefix.isEmpty()) {
-            team.prefix(Component.text(prefix + " "));
+            team.prefix(ColorUtil.component(prefix + " "));
         }
 
         team.addEntry(player.getName());
@@ -66,16 +65,16 @@ public class TablistManager {
         String processedFooter = footer.replace("{online}", String.valueOf(plugin.getServer().getOnlinePlayers().size()));
 
         player.sendPlayerListHeaderAndFooter(
-                Component.text(processedHeader),
-                Component.text(processedFooter)
+                ColorUtil.component(processedHeader),
+                ColorUtil.component(processedFooter)
         );
     }
 
     private void updateNameTag(Player player) {
         String prefix = plugin.getPrefixManager().getPrefix(player);
         if (!prefix.isEmpty()) {
-            player.displayName(Component.text(prefix + " " + player.getName()));
-            player.playerListName(Component.text(prefix + " " + player.getName()));
+            player.displayName(ColorUtil.component(prefix + " " + player.getName()));
+            player.playerListName(ColorUtil.component(prefix + " " + player.getName()));
         }
     }
 
@@ -115,7 +114,7 @@ public class TablistManager {
         String prefix = plugin.getPrefixManager().getPrefix(player);
         String displayName = prefix.isEmpty() ? player.getName() : prefix + " " + player.getName();
 
-        player.playerListName(Component.text(String.format("%02d_%s", position, ColorUtil.colorize(displayName))));
+        player.playerListName(ColorUtil.component(String.format("%02d_%s", position, displayName)));
     }
 
     public void updateAllPlayers() {

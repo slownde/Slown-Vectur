@@ -4,7 +4,6 @@ import de.syscall.SlownVectur;
 import de.syscall.util.ColorUtil;
 import de.syscall.util.AnimationUtil;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
@@ -36,7 +35,7 @@ public class ChatManager {
         }
 
         if (player.hasPermission("slownvectur.chat.animation")) {
-            message = AnimationUtil.processAnimations(message);
+            message = AnimationUtil.processAnimationsLegacy(message);
         }
 
         String prefix = plugin.getPrefixManager().getPrefix(player);
@@ -45,11 +44,9 @@ public class ChatManager {
                 .replace("{player}", player.getName())
                 .replace("{message}", message);
 
-        finalMessage = ColorUtil.colorize(finalMessage);
+        Component component = ColorUtil.component(finalMessage);
 
         event.setCancelled(true);
-
-        Component component = Component.text(finalMessage);
         plugin.getServer().broadcast(component);
     }
 
@@ -59,8 +56,7 @@ public class ChatManager {
                 .replace("{prefix}", prefix)
                 .replace("{player}", player.getName());
 
-        message = ColorUtil.colorize(message);
-        return Component.text(message);
+        return ColorUtil.component(message);
     }
 
     public Component getLeaveMessage(Player player) {
@@ -69,8 +65,7 @@ public class ChatManager {
                 .replace("{prefix}", prefix)
                 .replace("{player}", player.getName());
 
-        message = ColorUtil.colorize(message);
-        return Component.text(message);
+        return ColorUtil.component(message);
     }
 
     public void reload() {

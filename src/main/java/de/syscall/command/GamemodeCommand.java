@@ -7,6 +7,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class GamemodeCommand implements CommandExecutor {
 
@@ -17,31 +18,31 @@ public class GamemodeCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         if (!sender.hasPermission("slownvectur.gamemode")) {
-            sender.sendMessage(ColorUtil.colorize("&cDu hast keine Berechtigung für diesen Command!"));
+            sender.sendMessage(ColorUtil.component("&cDu hast keine Berechtigung für diesen Command!"));
             return true;
         }
 
         GameMode gameMode = getGameModeFromLabel(label);
 
         if (gameMode == null && args.length == 0) {
-            sender.sendMessage(ColorUtil.colorize("&cVerwendung: /gm <mode> [spieler]"));
+            sender.sendMessage(ColorUtil.component("&cVerwendung: /gm <mode> [spieler]"));
             return true;
         }
 
         if (gameMode == null) {
             gameMode = parseGameMode(args[0]);
             if (gameMode == null) {
-                sender.sendMessage(ColorUtil.colorize("&cUngültiger Gamemode!"));
+                sender.sendMessage(ColorUtil.component("&cUngültiger Gamemode!"));
                 return true;
             }
         }
 
         Player target;
-        if (args.length == 0 || (gameMode != null && args.length == 1 && !label.equals("gm"))) {
+        if (args.length == 0 || args.length == 1 && !label.equals("gm")) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(ColorUtil.colorize("&cDieser Command kann nur von Spielern ausgeführt werden!"));
+                sender.sendMessage(ColorUtil.component("&cDieser Command kann nur von Spielern ausgeführt werden!"));
                 return true;
             }
             target = (Player) sender;
@@ -49,7 +50,7 @@ public class GamemodeCommand implements CommandExecutor {
             String playerName = args.length > 1 ? args[1] : args[0];
             target = plugin.getServer().getPlayer(playerName);
             if (target == null) {
-                sender.sendMessage(ColorUtil.colorize("&cSpieler nicht gefunden!"));
+                sender.sendMessage(ColorUtil.component("&cSpieler nicht gefunden!"));
                 return true;
             }
         }
@@ -84,10 +85,10 @@ public class GamemodeCommand implements CommandExecutor {
         String modeName = getGameModeName(gameMode);
 
         if (sender.equals(target)) {
-            target.sendMessage(ColorUtil.colorize("&7Gamemode auf &6" + modeName + " &7gesetzt!"));
+            target.sendMessage(ColorUtil.component("&7Gamemode auf &6" + modeName + " &7gesetzt!"));
         } else {
-            target.sendMessage(ColorUtil.colorize("&7Dein Gamemode wurde auf &6" + modeName + " &7gesetzt!"));
-            sender.sendMessage(ColorUtil.colorize("&7Gamemode für &6" + target.getName() + " &7auf &6" + modeName + " &7gesetzt!"));
+            target.sendMessage(ColorUtil.component("&7Dein Gamemode wurde auf &6" + modeName + " &7gesetzt!"));
+            sender.sendMessage(ColorUtil.component("&7Gamemode für &6" + target.getName() + " &7auf &6" + modeName + " &7gesetzt!"));
         }
     }
 

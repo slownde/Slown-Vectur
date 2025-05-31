@@ -8,6 +8,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 public class TimeCommand implements CommandExecutor {
 
@@ -18,9 +19,9 @@ public class TimeCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         if (!sender.hasPermission("slownvectur.time")) {
-            sender.sendMessage(ColorUtil.colorize("&cDu hast keine Berechtigung für diesen Command!"));
+            sender.sendMessage(ColorUtil.component("&cDu hast keine Berechtigung für diesen Command!"));
             return true;
         }
 
@@ -28,14 +29,14 @@ public class TimeCommand implements CommandExecutor {
 
         if (args.length == 0) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(ColorUtil.colorize("&cBitte gib eine Welt an!"));
+                sender.sendMessage(ColorUtil.component("&cBitte gib eine Welt an!"));
                 return true;
             }
             world = ((Player) sender).getWorld();
         } else {
             world = plugin.getServer().getWorld(args[0]);
             if (world == null) {
-                sender.sendMessage(ColorUtil.colorize("&cWelt nicht gefunden!"));
+                sender.sendMessage(ColorUtil.component("&cWelt nicht gefunden!"));
                 return true;
             }
         }
@@ -56,11 +57,11 @@ public class TimeCommand implements CommandExecutor {
         }
 
         if (difference == 0) {
-            sender.sendMessage(ColorUtil.colorize("&7Es ist bereits &6" + timeName + "&7!"));
+            sender.sendMessage(ColorUtil.component("&7Es ist bereits &6" + timeName + "&7!"));
             return;
         }
 
-        sender.sendMessage(ColorUtil.colorize("&7Ändere Zeit zu &6" + timeName + "&7..."));
+        sender.sendMessage(ColorUtil.component("&7Ändere Zeit zu &6" + timeName + "&7..."));
 
         long finalDifference = difference;
         new BukkitRunnable() {
@@ -72,7 +73,7 @@ public class TimeCommand implements CommandExecutor {
             public void run() {
                 if (step >= totalSteps) {
                     world.setTime(targetTime);
-                    sender.sendMessage(ColorUtil.colorize("&7Zeit erfolgreich auf &6" + timeName + " &7gesetzt!"));
+                    sender.sendMessage(ColorUtil.component("&7Zeit erfolgreich auf &6" + timeName + " &7gesetzt!"));
                     cancel();
                     return;
                 }

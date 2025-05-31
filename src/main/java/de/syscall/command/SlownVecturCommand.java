@@ -5,6 +5,7 @@ import de.syscall.util.ColorUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
 public class SlownVecturCommand implements CommandExecutor {
 
@@ -15,12 +16,12 @@ public class SlownVecturCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage(ColorUtil.colorize("&6&lSlown-Vectur &7v" + plugin.getDescription().getVersion()));
-            sender.sendMessage(ColorUtil.colorize("&7Verfügbare Commands:"));
-            sender.sendMessage(ColorUtil.colorize("&6/" + label + " reload &7- Plugin neu laden"));
-            sender.sendMessage(ColorUtil.colorize("&6/" + label + " performance &7- Performance anzeigen"));
+            sender.sendMessage(ColorUtil.component("&6&lSlown-Vectur &7v" + plugin.getDescription().getVersion()));
+            sender.sendMessage(ColorUtil.component("&7Verfügbare Commands:"));
+            sender.sendMessage(ColorUtil.component("&6/" + label + " reload &7- Plugin neu laden"));
+            sender.sendMessage(ColorUtil.component("&6/" + label + " performance &7- Performance anzeigen"));
             return true;
         }
 
@@ -29,7 +30,7 @@ public class SlownVecturCommand implements CommandExecutor {
         switch (subCommand) {
             case "reload" -> {
                 if (!sender.hasPermission("slownvectur.reload")) {
-                    sender.sendMessage(ColorUtil.colorize("&cDu hast keine Berechtigung für diesen Command!"));
+                    sender.sendMessage(ColorUtil.component("&cDu hast keine Berechtigung für diesen Command!"));
                     return true;
                 }
 
@@ -37,13 +38,13 @@ public class SlownVecturCommand implements CommandExecutor {
                 plugin.reload();
                 long endTime = System.currentTimeMillis();
 
-                sender.sendMessage(ColorUtil.colorize("&aSlown-Vectur erfolgreich neu geladen! &7(" + (endTime - startTime) + "ms)"));
+                sender.sendMessage(ColorUtil.component("&aSlown-Vectur erfolgreich neu geladen! &7(" + (endTime - startTime) + "ms)"));
                 return true;
             }
 
             case "performance", "perf" -> {
                 if (!sender.hasPermission("slownvectur.performance")) {
-                    sender.sendMessage(ColorUtil.colorize("&cDu hast keine Berechtigung für diesen Command!"));
+                    sender.sendMessage(ColorUtil.component("&cDu hast keine Berechtigung für diesen Command!"));
                     return true;
                 }
 
@@ -52,7 +53,7 @@ public class SlownVecturCommand implements CommandExecutor {
             }
 
             default -> {
-                sender.sendMessage(ColorUtil.colorize("&cUnbekannter Subcommand! Verwende: reload, performance"));
+                sender.sendMessage(ColorUtil.component("&cUnbekannter Subcommand! Verwende: reload, performance"));
                 return true;
             }
         }
@@ -70,15 +71,14 @@ public class SlownVecturCommand implements CommandExecutor {
         int onlinePlayers = plugin.getServer().getOnlinePlayers().size();
         double tps = plugin.getServer().getTPS()[0];
 
-        sender.sendMessage(ColorUtil.colorize("&6&lSlown-Vectur Performance"));
-        sender.sendMessage(ColorUtil.colorize("&7&m─────────────────────────"));
-        sender.sendMessage(ColorUtil.colorize("&7Speicher: &a" + formatBytes(usedMemory) + "&7/&a" + formatBytes(maxMemory) +
+        sender.sendMessage(ColorUtil.component("&6&lSlown-Vectur Performance"));
+        sender.sendMessage(ColorUtil.component("&7&m─────────────────────────"));
+        sender.sendMessage(ColorUtil.component("&7Speicher: &a" + formatBytes(usedMemory) + "&7/&a" + formatBytes(maxMemory) +
                 " &7(" + String.format("%.1f", memoryUsagePercent) + "%)"));
-        sender.sendMessage(ColorUtil.colorize("&7TPS: " + getTpsColor(tps) + String.format("%.2f", tps)));
-        sender.sendMessage(ColorUtil.colorize("&7Online Spieler: &a" + onlinePlayers));
-        sender.sendMessage(ColorUtil.colorize("&7Geladene Daten: &a" + plugin.getPlayerDataManager().hasPlayerData(null)));
-        sender.sendMessage(ColorUtil.colorize("&7Plugin Version: &a" + plugin.getDescription().getVersion()));
-        sender.sendMessage(ColorUtil.colorize("&7&m─────────────────────────"));
+        sender.sendMessage(ColorUtil.component("&7TPS: " + getTpsColor(tps) + String.format("%.2f", tps)));
+        sender.sendMessage(ColorUtil.component("&7Online Spieler: &a" + onlinePlayers));
+        sender.sendMessage(ColorUtil.component("&7Plugin Version: &a" + plugin.getDescription().getVersion()));
+        sender.sendMessage(ColorUtil.component("&7&m─────────────────────────"));
     }
 
     private String formatBytes(long bytes) {

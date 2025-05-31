@@ -20,7 +20,6 @@ public class AsyncPlayerChatListener implements Listener {
         if (event.isCancelled()) return;
 
         Player player = event.getPlayer();
-
         plugin.getChatManager().handleChat(event);
     }
 }
