@@ -114,7 +114,7 @@ public class PortalManager {
         portal.setActionValue(section.getString("action.value"));
 
         String frameParticleStr = section.getString("particles.frame", "PORTAL");
-        String innerParticleStr = section.getString("particles.inner", "ENCHANTMENT_TABLE");
+        String innerParticleStr = section.getString("particles.inner", "NAUTILUS");
         try {
             portal.setFrameParticle(Particle.valueOf(frameParticleStr));
             portal.setInnerParticle(Particle.valueOf(innerParticleStr));
@@ -125,7 +125,7 @@ public class PortalManager {
 
         portal.setParticleSpeed(section.getInt("particles.speed", 1));
         portal.setParticleCount(section.getInt("particles.count", 1));
-        portal.setParticleSpacing(section.getDouble("particles.spacing", 0.4));
+        portal.setParticleSpacing(section.getDouble("particles.spacing", 0.3));
 
         if (section.contains("schedule")) {
             ConfigurationSection scheduleSection = section.getConfigurationSection("schedule");
@@ -268,7 +268,7 @@ public class PortalManager {
                         for (Player player : plugin.getServer().getOnlinePlayers()) {
                             if (player.getWorld() == portal.getCorner1().getWorld()) {
                                 double distance = player.getLocation().distance(portal.getCorner1());
-                                if (distance < 30) {
+                                if (distance < 50) {
                                     hasNearbyPlayers = true;
                                     break;
                                 }
@@ -291,18 +291,6 @@ public class PortalManager {
                 }
             }
         }.runTaskTimer(plugin, 0L, 5L);
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                long currentTime = System.currentTimeMillis();
-                portalCooldowns.entrySet().removeIf(entry ->
-                        currentTime - entry.getValue() > 30000);
-
-                playersInPortals.removeIf(uuid ->
-                        plugin.getServer().getPlayer(uuid) == null);
-            }
-        }.runTaskTimer(plugin, 6000L, 6000L);
     }
 
     private void spawnPortalParticles(Portal portal) {
@@ -317,13 +305,17 @@ public class PortalManager {
         double maxZ = Math.max(corner1.getZ(), corner2.getZ());
 
         double spacing = portal.getParticleSpacing();
-
+        
         for (double x = minX; x <= maxX; x += spacing) {
             for (double y = minY; y <= maxY; y += spacing) {
                 for (double z = minZ; z <= maxZ; z += spacing) {
-                    boolean isFrame = Math.abs(x - minX) < 0.1 || Math.abs(x - maxX) < 0.1 ||
+                    boolean isFrame = false;
+
+                    if (Math.abs(x - minX) < 0.1 || Math.abs(x - maxX) < 0.1 ||
                             Math.abs(y - minY) < 0.1 || Math.abs(y - maxY) < 0.1 ||
-                            Math.abs(z - minZ) < 0.1 || Math.abs(z - maxZ) < 0.1;
+                            Math.abs(z - minZ) < 0.1 || Math.abs(z - maxZ) < 0.1) {
+                        isFrame = true;
+                    }
 
                     Location particleLocation = new Location(corner1.getWorld(), x, y, z);
 
