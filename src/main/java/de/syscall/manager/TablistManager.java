@@ -43,7 +43,15 @@ public class TablistManager {
         String prefix = plugin.getPrefixManager().getPrefix(player);
         int weight = plugin.getPrefixManager().getWeight(player);
 
-        String teamName = String.format("%03d_%s", 999 - weight, player.getName().toLowerCase());
+        String oldTeamName = teamNames.get(player.getUniqueId());
+        if (oldTeamName != null) {
+            Team oldTeam = scoreboard.getTeam(oldTeamName);
+            if (oldTeam != null) {
+                oldTeam.unregister();
+            }
+        }
+
+        String teamName = String.format("%04d_%s", 9999 - weight, player.getName().toLowerCase());
         teamNames.put(player.getUniqueId(), teamName);
 
         Team team = scoreboard.getTeam(teamName);
@@ -56,8 +64,6 @@ public class TablistManager {
         }
 
         team.addEntry(player.getName());
-
-        sortAllPlayers();
     }
 
     private void updateTablistDisplay(Player player) {
@@ -75,6 +81,9 @@ public class TablistManager {
         if (!prefix.isEmpty()) {
             player.displayName(ColorUtil.component(prefix + " " + player.getName()));
             player.playerListName(ColorUtil.component(prefix + " " + player.getName()));
+        } else {
+            player.displayName(ColorUtil.component(player.getName()));
+            player.playerListName(ColorUtil.component(player.getName()));
         }
     }
 
@@ -89,32 +98,6 @@ public class TablistManager {
                 team.unregister();
             }
         }
-    }
-
-    private void sortAllPlayers() {
-        List<Player> sortedPlayers = new ArrayList<>(plugin.getServer().getOnlinePlayers());
-        sortedPlayers.sort((p1, p2) -> {
-            int weight1 = plugin.getPrefixManager().getWeight(p1);
-            int weight2 = plugin.getPrefixManager().getWeight(p2);
-
-            if (weight1 != weight2) {
-                return Integer.compare(weight2, weight1);
-            }
-
-            return p1.getName().compareToIgnoreCase(p2.getName());
-        });
-
-        for (int i = 0; i < sortedPlayers.size(); i++) {
-            Player player = sortedPlayers.get(i);
-            updatePlayerListName(player, i);
-        }
-    }
-
-    private void updatePlayerListName(Player player, int position) {
-        String prefix = plugin.getPrefixManager().getPrefix(player);
-        String displayName = prefix.isEmpty() ? player.getName() : prefix + " " + player.getName();
-
-        player.playerListName(ColorUtil.component(String.format("%02d_%s", position, displayName)));
     }
 
     public void updateAllPlayers() {
