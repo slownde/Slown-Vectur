@@ -48,6 +48,10 @@ public class SlownVectur extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (playerDataManager != null) {
+            playerDataManager.shutdown();
+        }
+
         if (portalManager != null) {
             portalManager.shutdown();
         }
