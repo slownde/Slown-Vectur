@@ -97,6 +97,63 @@ public class CoinManager {
         return data != null ? data.getBankCoins() : 0.0;
     }
 
+    public void setBankCoins(Player player, double amount) {
+        setBankCoins(player.getUniqueId(), amount);
+    }
+
+    public void setBankCoins(UUID uuid, double amount) {
+        PlayerData data = plugin.getPlayerDataManager().getPlayerData(uuid);
+        if (data != null) {
+            data.setBankCoins(Math.max(0, amount));
+            plugin.getDatabaseManager().savePlayerData(data);
+
+            Player player = plugin.getServer().getPlayer(uuid);
+            if (player != null) {
+                plugin.getScoreboardManager().updateBoard(player);
+            }
+        }
+    }
+
+    public void addBankCoins(Player player, double amount) {
+        addBankCoins(player.getUniqueId(), amount);
+    }
+
+    public void addBankCoins(UUID uuid, double amount) {
+        if (amount <= 0) return;
+
+        PlayerData data = plugin.getPlayerDataManager().getPlayerData(uuid);
+        if (data != null) {
+            data.addBankCoins(amount);
+            plugin.getDatabaseManager().savePlayerData(data);
+
+            Player player = plugin.getServer().getPlayer(uuid);
+            if (player != null) {
+                plugin.getScoreboardManager().updateBoard(player);
+            }
+        }
+    }
+
+    public boolean removeBankCoins(Player player, double amount) {
+        return removeBankCoins(player.getUniqueId(), amount);
+    }
+
+    public boolean removeBankCoins(UUID uuid, double amount) {
+        if (amount <= 0) return false;
+
+        PlayerData data = plugin.getPlayerDataManager().getPlayerData(uuid);
+        if (data != null && data.getBankCoins() >= amount) {
+            data.removeBankCoins(amount);
+            plugin.getDatabaseManager().savePlayerData(data);
+
+            Player player = plugin.getServer().getPlayer(uuid);
+            if (player != null) {
+                plugin.getScoreboardManager().updateBoard(player);
+            }
+            return true;
+        }
+        return false;
+    }
+
     public boolean depositCoins(Player player, double amount) {
         return depositCoins(player.getUniqueId(), amount);
     }
